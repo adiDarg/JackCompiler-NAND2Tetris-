@@ -1,0 +1,3 @@
+C:/Users/Owner/CLionProjects/JackCompiler/cmake-build-debug/CMakeFiles/JackCompiler.dir
+C:/Users/Owner/CLionProjects/JackCompiler/cmake-build-debug/CMakeFiles/edit_cache.dir
+C:/Users/Owner/CLionProjects/JackCompiler/cmake-build-debug/CMakeFiles/rebuild_cache.dir

@@ -41,9 +41,11 @@ void writeOut(CompilationEngine* self,const char str[]) {
 }
 int compileKeyword(CompilationEngine* self, Keyword kw) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
+    if (tokenizer->error != "\0") {
+        strcpy(self->error,tokenizer->error);
+        return 0;
+    }
     if (tokenType(tokenizer) != KEYWORD || keyword(tokenizer) != kw) {
-        strcpy(self->error,"Expected keyword:");
-        strcat(self->error,keyword_to_text(kw));
         return 0;
     }
     writeOut(self,"<keyword> ");
@@ -58,11 +60,6 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
 int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (tokenType(tokenizer) != KEYWORD) {
-        strcpy(self->error,"Expected keyword: ");
-        for (int i = 0; i < len; i++) {
-            strncat(self->error,keyword_to_text(arr[i]),80/len - 1);
-            strcat(self->error,",");
-        }
         return 0;
     }
     const Keyword kw = keyword(tokenizer);
@@ -78,16 +75,14 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
             return 1;
         }
     }
-    strcpy(self->error,"Expected keyword: ");
-    for (int i = 0; i < len; i++) {
-        strncat(self->error,keyword_to_text(arr[i]),80/len - 1);
-        strcat(self->error,",");
-    }
     return 0;
 }
 int compileIdentifier(CompilationEngine* self) {
+    if (self->jack_tokenizer->error != "\0") {
+        strcpy(self->error,self->jack_tokenizer->error);
+        return 0;
+    }
     if (tokenType(self->jack_tokenizer) != IDENTIFIER) {
-        strcpy(self->error,"Expected an identifier");
         return 0;
     }
     writeOut(self, "<identifier> ");
@@ -101,12 +96,11 @@ int compileIdentifier(CompilationEngine* self) {
 }
 int compileSymbol(CompilationEngine* self, char sym) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
+    if (tokenizer->error != "\0") {
+        strcpy(self->error,tokenizer->error);
+        return 0;
+    }
     if (tokenType(tokenizer) != SYMBOL || symbol(tokenizer) != sym) {
-        strcpy(self->error,"Expected symbol: ");
-        char symbolStr[2];
-        symbolStr[0] = symbol(tokenizer);
-        symbolStr[1] = '\0';
-        strcat(self->error,symbolStr);
         return 0;
     }
     writeOut(self,"<symbol> ");
@@ -139,15 +133,11 @@ int compileSymbol(CompilationEngine* self, char sym) {
 }
 int compileSymbols(CompilationEngine* self, const char* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
+    if (tokenizer->error != "\0") {
+        strcpy(self->error,tokenizer->error);
+        return 0;
+    }
     if (tokenType(tokenizer) != SYMBOL) {
-        strcpy(self->error,"Expected symbol: ");
-        for (int i = 0; i < len; i++) {
-            char char_as_string[2];
-            char_as_string[0] = arr[i];
-            char_as_string[1] = '\0';
-            strncat(self->error,char_as_string,2);
-            strcat(self->error,",");
-        }
         return 0;
     }
     const char ch = symbol(tokenizer);
@@ -167,8 +157,11 @@ int compileSymbols(CompilationEngine* self, const char* arr,const int len){
     return 0;
 }
 int compileIntConstant(CompilationEngine* self) {
+    if (self->jack_tokenizer->error != "\0") {
+        strcpy(self->error,self->jack_tokenizer->error);
+        return 0;
+    }
     if (tokenType(self->jack_tokenizer) != INT_CONST) {
-        strcpy(self->error,"Expected an integer constant");
         return 0;
     }
     writeOut(self, "<integerConstant> ");
@@ -183,8 +176,11 @@ int compileIntConstant(CompilationEngine* self) {
     return 1;
 }
 int compileStringConstant(CompilationEngine* self) {
+    if (self->jack_tokenizer->error != "\0") {
+        strcpy(self->error,self->jack_tokenizer->error);
+        return 0;
+    }
     if (tokenType(self->jack_tokenizer) != STRING_CONST) {
-        strcpy(self->error,"Expected a string constant");
         return 0;
     }
     writeOut(self, "<stringConstant> ");
@@ -198,11 +194,14 @@ int compileStringConstant(CompilationEngine* self) {
 }
 int compileType(CompilationEngine* self) {
     const JackTokenizer* tokenizer = self->jack_tokenizer;
+    if (tokenizer->error != "\0") {
+        strcpy(self->error,tokenizer->error);
+        return 0;
+    }
     const int primitive = tokenType(tokenizer) == KEYWORD &&
         ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN));
     const int className = tokenType(tokenizer) == IDENTIFIER;
     if (!primitive && !className){
-        strcpy(self->error,"Expected: primitive type(int, char, boolean) or a class name");
         return 0;
     }
     if (primitive) {

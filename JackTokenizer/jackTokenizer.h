@@ -20,6 +20,7 @@ typedef struct {
     char *source;
     char *cursor;
     char buffer[100];
+    char error[100];
 } JackTokenizer;
 
 

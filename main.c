@@ -1,6 +1,6 @@
-#include "JackAnalyzer.h"
+#include "JackAnalyzer/JackAnalyzer.h"
 
 int main(void) {
-    operateOnFile("../data/Pong/Bat.jack","../output/intermediate.xml");
+    operateOnFile("../data/input/Pong/Ball.jack","../data/output/intermediate.xml");
     return 0;
 }

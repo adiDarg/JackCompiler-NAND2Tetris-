@@ -55,29 +55,29 @@ build CMakeFiles/JackCompiler.dir/main.c.obj: C_COMPILER__JackCompiler_unscanned
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
 
-build CMakeFiles/JackCompiler.dir/JackAnalyzer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackAnalyzer.c || cmake_object_order_depends_target_JackCompiler
-  DEP_FILE = CMakeFiles\JackCompiler.dir\JackAnalyzer.c.obj.d
+build CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackAnalyzer/JackAnalyzer.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\JackAnalyzer\JackAnalyzer.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
-  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackAnalyzer
 
-build CMakeFiles/JackCompiler.dir/JackTokenizer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackTokenizer.c || cmake_object_order_depends_target_JackCompiler
-  DEP_FILE = CMakeFiles\JackCompiler.dir\JackTokenizer.c.obj.d
+build CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackTokenizer/JackTokenizer.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\JackTokenizer\JackTokenizer.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
-  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackTokenizer
 
-build CMakeFiles/JackCompiler.dir/KeyWord.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/KeyWord.c || cmake_object_order_depends_target_JackCompiler
-  DEP_FILE = CMakeFiles\JackCompiler.dir\KeyWord.c.obj.d
+build CMakeFiles/JackCompiler.dir/Keyword/KeyWord.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/Keyword/KeyWord.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\Keyword\KeyWord.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
-  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\Keyword
 
-build CMakeFiles/JackCompiler.dir/CompilationEngine.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/CompilationEngine.c || cmake_object_order_depends_target_JackCompiler
-  DEP_FILE = CMakeFiles\JackCompiler.dir\CompilationEngine.c.obj.d
+build CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/CompilationEngine/CompilationEngine.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\CompilationEngine\CompilationEngine.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
-  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\CompilationEngine
 
 
 # =============================================================================
@@ -87,7 +87,7 @@ build CMakeFiles/JackCompiler.dir/CompilationEngine.c.obj: C_COMPILER__JackCompi
 #############################################
 # Link the executable JackCompiler.exe
 
-build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine.c.obj
+build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\JackCompiler.dir

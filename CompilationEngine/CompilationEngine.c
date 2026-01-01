@@ -3,6 +3,8 @@
 //
 
 #include "CompilationEngine.h"
+#include "../JackTokenizer/jackTokenizer.h"
+#include "../Keyword/keyword.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -10,10 +12,10 @@
 CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
     CompilationEngine* self = malloc(sizeof(CompilationEngine));
     self->jack_tokenizer = jack_tokenizer;
-    self->out = malloc(4096);
+    self->out = malloc(8192);
     self->out[0] = '\0';
     self->tab=0;
-    self->cap=4096;
+    self->cap=8192;
     self->len = 0;
     self->error[0] = '\0';
     return self;
@@ -21,9 +23,13 @@ CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
 void writeOut(CompilationEngine* self,const char str[]) {
     const size_t n = strlen(str);
     if (self->len + self->tab * 2 + n + 1 > self->cap) {
+        self->cap += n + 1 + self->tab * 2;
         self->cap *= 2;
         char *tmp = realloc(self->out, self->cap);
-        if (!(int)tmp) return;
+        if (!(int)tmp) {
+            printf("Failed to alocate for output");
+            return;
+        };
         self->out = tmp;
     }
     for (int i = 0; i < self->tab; i++) {
@@ -576,109 +582,131 @@ int CompileExpression(CompilationEngine* self) {
     writeOut(self,"</expression>\n");
     return 1;
 }
-void writeAndRealloc(size_t* errors_size,char* errors,const CompilationEngine* self) {
+void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* self) {
     if (*errors_size > 1)
-        strncat(errors,"\n",1);
-    if (strlen(errors) > 0.8 * *errors_size) {
-        errors = (char*) realloc(errors,*errors_size * 2);
+        strncat(*errors,"\n",1);
+    if (strlen(*errors) > 0.8 * *errors_size) {
+        *errors = (char*) realloc(*errors,*errors_size * 2);
         *errors_size *= 2;
     }
-    strncat(errors,self->error,*errors_size/2);
-    strncat(errors,"\0",1);
+    strncat(*errors,self->error,*errors_size/2);
+    strncat(*errors,"\0",1);
 }
 int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");
     self->tab++;
     char* errors = malloc(sizeof(char) * 100);
+    if (errors == NULL) {
+        printf("Failed to alocate errors[100]");
+        return 0;
+    }
     errors[0] = '\0';
-    size_t errors_size = sizeof(errors) / sizeof(char);
+    size_t errors_size = 100;
     if (!compileIntConstant(self)) {
-        writeAndRealloc(&errors_size,errors,self);
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else {
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     if (!compileStringConstant(self)) {
-        //FUNC
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else {
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     const Keyword kws[] = {TRUE,FALSE,KW_NULL,THIS};
     if (!compileKeywords(self,kws,4)) {
-        //FUNC
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else {
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     if (!compileIdentifier(self)) {
-        //FUNC
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else if (compileSymbol(self,'[')) {
         if (!CompileExpression(self)) {
+            free(errors);
             return 0;
         }
         if (!compileSymbol(self,']')) {
+            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     else if (compileSymbol(self,'.')) {
         if (!compileIdentifier(self)) {
+            free(errors);
             return 0;
         }
         if (!compileSymbol(self,'(')) {
+            free(errors);
             return 0;
         }
         if (!CompileExpressionList(self)) {
+            free(errors);
             return 0;
         }
         if (!compileSymbol(self,')')) {
+            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     else {
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     if (!compileSymbol(self,'(')) {
-        //FUNC
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else {
         if (!CompileExpression(self)) {
+            free(errors);
             return 0;
         }
         if (!compileSymbol(self,')')) {
+            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
+        free(errors);
         return 1;
     }
     if (!compileUnaryOperator(self)) {
-        //AAAA
+        writeAndRealloc(&errors_size,&errors,self);
     }
     else {
         if(CompileTerm(self)) {
             self->tab--;
             writeOut(self,"</term>\n");
+            free(errors);
             return 1;
         }
+        free(errors);
         return 0;
     }
-    strncat(self->error,errors,100);
+    strncpy(self->error,errors,100);
+    free(errors);
     return 0;
 }
 int CompileSubroutineCall(CompilationEngine* self) {

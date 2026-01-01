@@ -4,7 +4,7 @@
 
 #ifndef COMPILATIONENGINE_H
 #define COMPILATIONENGINE_H
-#include "jackTokenizer.h"
+#include "../JackTokenizer/jackTokenizer.h"
 #include <stdio.h>
 typedef struct {
     JackTokenizer* jack_tokenizer;

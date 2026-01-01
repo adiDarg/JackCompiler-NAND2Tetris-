@@ -4,11 +4,11 @@ project(JackCompiler C)
 set(CMAKE_C_STANDARD 11)
 
 add_executable(JackCompiler main.c
-        JackAnalyzer.c
-        JackTokenizer.c
-        KeyWord.c
-        KeyWord.h
-        JackTokenizer.h
-        CompilationEngine.c
-        CompilationEngine.h
-        JackAnalyzer.h)
+        JackAnalyzer/JackAnalyzer.c
+        JackTokenizer/JackTokenizer.c
+        Keyword/KeyWord.c
+        Keyword/keyword.h
+        JackTokenizer/jackTokenizer.h
+        CompilationEngine/CompilationEngine.c
+        CompilationEngine/CompilationEngine.h
+        JackAnalyzer/JackAnalyzer.h)

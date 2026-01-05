@@ -41,7 +41,7 @@ void writeOut(CompilationEngine* self,const char str[]) {
 }
 int compileKeyword(CompilationEngine* self, Keyword kw) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
-    if (tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
@@ -78,7 +78,7 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     return 0;
 }
 int compileIdentifier(CompilationEngine* self) {
-    if (self->jack_tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
@@ -96,7 +96,7 @@ int compileIdentifier(CompilationEngine* self) {
 }
 int compileSymbol(CompilationEngine* self, char sym) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
-    if (tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
@@ -133,7 +133,7 @@ int compileSymbol(CompilationEngine* self, char sym) {
 }
 int compileSymbols(CompilationEngine* self, const char* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
-    if (tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
@@ -157,7 +157,7 @@ int compileSymbols(CompilationEngine* self, const char* arr,const int len){
     return 0;
 }
 int compileIntConstant(CompilationEngine* self) {
-    if (self->jack_tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
@@ -176,7 +176,7 @@ int compileIntConstant(CompilationEngine* self) {
     return 1;
 }
 int compileStringConstant(CompilationEngine* self) {
-    if (self->jack_tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
@@ -194,7 +194,7 @@ int compileStringConstant(CompilationEngine* self) {
 }
 int compileType(CompilationEngine* self) {
     const JackTokenizer* tokenizer = self->jack_tokenizer;
-    if (tokenizer->error != "\0") {
+    if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
@@ -238,6 +238,8 @@ int CompileClass(CompilationEngine *self) {
     self->tab++;
     JackTokenizer* tokenizer = self->jack_tokenizer;
     advance(tokenizer);
+    strcpy(tokenizer->error,"\0");
+    tokenizer->isError = 0;
     if (!compileKeyword(self,CLASS)) {
         return 0;
     }
@@ -584,12 +586,23 @@ int CompileExpression(CompilationEngine* self) {
 void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* self) {
     if (*errors_size > 1)
         strncat(*errors,"\n",1);
-    if (strlen(*errors) > 0.8 * *errors_size) {
-        *errors = (char*) realloc(*errors,*errors_size * 2);
+    const size_t used = strlen(*errors);
+    const size_t add = strlen(self->error);
+    if (used + add + 2 > *errors_size) {
+        size_t new_size = *errors_size;
+        while (used + add + 2 > new_size) {
+            new_size *= 2;
+        }
+        char* tmp = realloc(*errors, new_size);
+        if (!tmp) {
+            printf("Allocation fail on writeAndRealloc");
+            return;
+        }
+        *errors = tmp;
         *errors_size *= 2;
     }
-    strncat(*errors,self->error,*errors_size/2);
-    strncat(*errors,"\0",1);
+    const size_t remaining = *errors_size - used - 1;
+    strncat(*errors,self->error,remaining);
 }
 int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");

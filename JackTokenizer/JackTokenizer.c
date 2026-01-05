@@ -16,6 +16,7 @@ JackTokenizer* JT_Constructor(char *source) {
     self->buffer[0] = '_';
     self->buffer[1] = '\0';
     self->error[0] = '\0';
+    self->isError = 0;
     return self;
 }
 int hasMoreTokens(const JackTokenizer *self) {
@@ -66,6 +67,7 @@ void advance(JackTokenizer *self) {
         size_t len = 0;
         do {
             if (len >= sizeof(self->buffer) - 1) {
+                self->isError = 1;
                 strcpy(self->error,"String constant too long");
                 break;
             }
@@ -82,6 +84,7 @@ void advance(JackTokenizer *self) {
         size_t len = 0;
         while (*self->cursor != '\0' && isdigit(*self->cursor)) {
             if (intVal(self->buffer) > 32767) {
+                self->isError = 1;
                 strcpy(self->error,"Int constant too long");
                 break;
             }
@@ -96,6 +99,7 @@ void advance(JackTokenizer *self) {
         size_t len = 0;
         while (*self->cursor && !isWhitespace(*self->cursor) && !isSymbol(*self->cursor,1)) {
             if (len >= sizeof(self->buffer) - 1) {
+                self->isError = 1;
                 strcpy(self->error,"Identifier name is too long");
                 break;
             }
@@ -108,7 +112,7 @@ int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);
 int isStringConst(const char* token, int len);
 int isIdentifier(const char* token, int len);
-TokenType tokenType(const JackTokenizer *self) {
+TokenType tokenType(JackTokenizer *self) {
     const char* currentToken = self->buffer;
     const int len = strlen(self->buffer);
     if (len == 0) {
@@ -129,6 +133,7 @@ TokenType tokenType(const JackTokenizer *self) {
     if (isIdentifier(currentToken,len)) {
         return IDENTIFIER;
     }
+    self->isError = 1;
     strcpy(self->error,"Unknown token");
     return UNKNOWN_TOKEN;
 }

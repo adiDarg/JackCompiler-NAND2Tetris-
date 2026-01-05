@@ -21,6 +21,7 @@ typedef struct {
     char *cursor;
     char buffer[100];
     char error[100];
+    int isError;
 } JackTokenizer;
 
 
@@ -31,7 +32,7 @@ int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);
 int isStringConst(const char* token, int len);
 int isIdentifier(const char* token, int len);
-TokenType tokenType(const JackTokenizer *self);
+TokenType tokenType(JackTokenizer *self);
 Keyword keyword(const JackTokenizer *self);
 char symbol(const JackTokenizer *self);
 char* identifier(const JackTokenizer *self);

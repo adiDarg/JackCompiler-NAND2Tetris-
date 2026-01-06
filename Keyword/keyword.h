@@ -18,5 +18,6 @@ typedef enum {
 
 int keyword_lookup(const char *s, Keyword *out);
 const char *keyword_to_text(const Keyword kw);
+const char *keywords_to_text(const Keyword* kw,const int len);
 
 #endif

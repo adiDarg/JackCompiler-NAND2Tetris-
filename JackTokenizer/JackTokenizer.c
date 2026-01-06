@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "../Keyword/keyword.h"
@@ -17,6 +18,7 @@ JackTokenizer* JT_Constructor(char *source) {
     self->buffer[1] = '\0';
     self->error[0] = '\0';
     self->isError = 0;
+    self->line = 1;
     return self;
 }
 int hasMoreTokens(const JackTokenizer *self) {
@@ -27,6 +29,9 @@ int isWhitespace(char c) {
 }
 void skipWhitespace(JackTokenizer *self) {
     while (*self->cursor && isWhitespace(*self->cursor)) {
+        if (*self->cursor == '\n') {
+            self->line++;
+        }
         self->cursor++;
     }
 }
@@ -40,9 +45,13 @@ void skipComments(JackTokenizer *self) {
                 self->cursor++;
             }
             self->cursor++;
+            self->line++;
         }
         else if (self->cursor[1] == '*') {
             while (!(*self->cursor == '*' && self->cursor[1] == '/') && *self->cursor != '\0') {
+                if (*self->cursor == '\n') {
+                    self->line++;
+                }
                 self->cursor++;
             }
             self->cursor+=2;
@@ -68,7 +77,8 @@ void advance(JackTokenizer *self) {
         do {
             if (len >= sizeof(self->buffer) - 1) {
                 self->isError = 1;
-                strcpy(self->error,"String constant too long");
+                sprintf(self->error,"line %d: ",self->line);
+                strcat(self->error,"String constant too long");
                 break;
             }
             self->buffer[len++] = *self->cursor;
@@ -85,7 +95,8 @@ void advance(JackTokenizer *self) {
         while (*self->cursor != '\0' && isdigit(*self->cursor)) {
             if (intVal(self->buffer) > 32767) {
                 self->isError = 1;
-                strcpy(self->error,"Int constant too long");
+                sprintf(self->error,"line %d: ",self->line);
+                strcat(self->error,"Int constant too long");
                 break;
             }
             self->buffer[len++] = *self->cursor;
@@ -100,7 +111,8 @@ void advance(JackTokenizer *self) {
         while (*self->cursor && !isWhitespace(*self->cursor) && !isSymbol(*self->cursor,1)) {
             if (len >= sizeof(self->buffer) - 1) {
                 self->isError = 1;
-                strcpy(self->error,"Identifier name is too long");
+                sprintf(self->error,"line %d: ",self->line);
+                strcat(self->error,"Identifier name is too long");
                 break;
             }
             self->buffer[len++] = *self->cursor++;

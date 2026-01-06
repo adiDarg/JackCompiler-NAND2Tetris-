@@ -1,5 +1,7 @@
 #include <string.h>
 #include "KeyWord.h"
+
+#include <stdlib.h>
 //
 // Created by Owner on 17/12/2025.
 //
@@ -38,4 +40,12 @@ const char *keyword_to_text(const Keyword kw) {
         }
          }
     return NULL;  // not a keyword
+}
+const char *keywords_to_text(const Keyword* kw,const int len) {
+    char* res = malloc(12 * len);
+    for (int i = 0; i < len; i++) {
+        strcat(res,keyword_to_text(kw[i]));
+        strcat(res,",");
+    }
+    return res;
 }

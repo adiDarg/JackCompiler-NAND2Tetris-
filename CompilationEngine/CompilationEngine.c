@@ -46,6 +46,7 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
         return 0;
     }
     if (tokenType(tokenizer) != KEYWORD || keyword(tokenizer) != kw) {
+        sprintf(self->error,"line %d: Expected %s",self->jack_tokenizer->line,keyword_to_text(kw));
         return 0;
     }
     writeOut(self,"<keyword> ");
@@ -60,6 +61,8 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
 int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (tokenType(tokenizer) != KEYWORD) {
+        snprintf(self->error,100,"line %d: Expected Keyword: %s",
+            self->jack_tokenizer->line, keywords_to_text(arr,len));
         return 0;
     }
     const Keyword kw = keyword(tokenizer);
@@ -72,9 +75,12 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
             writeOut(self," </keyword>\n");
             self->tab = temp;
             advance(tokenizer);
+            strcpy(self->error,"\0");
             return 1;
         }
     }
+    strcpy(self->error,"Expected keyword: ");
+    strncat(self->error,keywords_to_text(arr,len),80);
     return 0;
 }
 int compileIdentifier(CompilationEngine* self) {
@@ -83,6 +89,7 @@ int compileIdentifier(CompilationEngine* self) {
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != IDENTIFIER) {
+        sprintf(self->error,"Expected Identifier");
         return 0;
     }
     writeOut(self, "<identifier> ");
@@ -101,6 +108,7 @@ int compileSymbol(CompilationEngine* self, char sym) {
         return 0;
     }
     if (tokenType(tokenizer) != SYMBOL || symbol(tokenizer) != sym) {
+        sprintf(self->error,"line %d: Expected %c",self->jack_tokenizer->line,sym);
         return 0;
     }
     writeOut(self,"<symbol> ");
@@ -138,6 +146,14 @@ int compileSymbols(CompilationEngine* self, const char* arr,const int len){
         return 0;
     }
     if (tokenType(tokenizer) != SYMBOL) {
+        strcpy(self->error,"Expected symbol: ");
+        for (int i = 0; i < len; i++) {
+            char char_as_string[2];
+            char_as_string[0] = arr[i];
+            char_as_string[1] = '\0';
+            strncat(self->error,char_as_string,2);
+            strcat(self->error,",");
+        }
         return 0;
     }
     const char ch = symbol(tokenizer);
@@ -162,6 +178,7 @@ int compileIntConstant(CompilationEngine* self) {
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != INT_CONST) {
+        sprintf(self->error,"Expected int constant");
         return 0;
     }
     writeOut(self, "<integerConstant> ");
@@ -181,6 +198,7 @@ int compileStringConstant(CompilationEngine* self) {
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != STRING_CONST) {
+        sprintf(self->error,"Expected string constant");
         return 0;
     }
     writeOut(self, "<stringConstant> ");

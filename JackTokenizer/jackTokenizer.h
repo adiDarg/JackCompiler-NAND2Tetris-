@@ -22,6 +22,7 @@ typedef struct {
     char buffer[100];
     char error[100];
     int isError;
+    int line;
 } JackTokenizer;
 
 

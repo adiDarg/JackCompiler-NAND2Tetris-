@@ -8,7 +8,7 @@
 // Inputs some numbers and computes their average
 class Main {
    function void main() {
-     var Array a; 
+     var Array a;
      var int length;
      var int i, sum;
 
@@ -21,7 +21,6 @@ class Main {
         let sum = sum + a[i];
         let i = i + 1;
      }
-     
      do Output.printString("The average is ");
      do Output.printInt(sum / length);
      return;

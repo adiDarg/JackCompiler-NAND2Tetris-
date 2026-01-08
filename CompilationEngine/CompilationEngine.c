@@ -20,7 +20,6 @@ CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
     self->error[0] = '\0';
     return self;
 }
-//TODO: append errors so instead of 1 final error you get list of errors
 void writeOut(CompilationEngine* self,const char str[]) {
     const size_t n = strlen(str);
     if (self->len + self->tab * 2 + n + 1 > self->cap) {

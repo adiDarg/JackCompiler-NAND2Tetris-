@@ -1,0 +1,19 @@
+class Fibonacci {
+    field int last;
+    constructor Fibonacci new(int value){
+        let last = value;
+        return this;
+    }
+    function void print(){
+        var int prev;
+        var int curr;
+        let prev = 1;
+        let curr = 1;
+        while (curr < last){
+            do Output.printString(curr);
+            let curr = curr + prev;
+            let prev = curr - prev;
+        }
+        return;
+    }
+}

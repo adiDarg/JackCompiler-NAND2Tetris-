@@ -20,6 +20,7 @@ CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
     self->error[0] = '\0';
     return self;
 }
+//TODO: append errors so instead of 1 final error you get list of errors
 void writeOut(CompilationEngine* self,const char str[]) {
     const size_t n = strlen(str);
     if (self->len + self->tab * 2 + n + 1 > self->cap) {
@@ -89,7 +90,7 @@ int compileIdentifier(CompilationEngine* self) {
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != IDENTIFIER) {
-        sprintf(self->error,"Expected Identifier");
+        sprintf(self->error,"line %d: Expected Identifier",self->jack_tokenizer->line);
         return 0;
     }
     writeOut(self, "<identifier> ");
@@ -211,7 +212,7 @@ int compileStringConstant(CompilationEngine* self) {
     return 1;
 }
 int compileType(CompilationEngine* self) {
-    const JackTokenizer* tokenizer = self->jack_tokenizer;
+    JackTokenizer* tokenizer = self->jack_tokenizer;
     if (self->jack_tokenizer->isError == 1) {
         strcpy(self->error,tokenizer->error);
         return 0;
@@ -220,6 +221,7 @@ int compileType(CompilationEngine* self) {
         ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN));
     const int className = tokenType(tokenizer) == IDENTIFIER;
     if (!primitive && !className){
+        sprintf(self->error,"line %d: Expected a type",self->jack_tokenizer->line);
         return 0;
     }
     if (primitive) {
@@ -312,7 +314,7 @@ int CompileClassVarDec(CompilationEngine* self) {
 int CompileSubroutineBody(CompilationEngine* self) {
     writeOut(self,"<subroutineBody>\n");
     self->tab++;
-    const JackTokenizer* tokenizer = self->jack_tokenizer;
+    JackTokenizer* tokenizer = self->jack_tokenizer;
     if (!compileSymbol(self,'{')) {
         return 0;
     }
@@ -340,6 +342,7 @@ int CompileSubroutineDec(CompilationEngine* self) {
     }
     if (!compileKeyword(self,VOID)) {
         if (!compileType(self)) {
+            sprintf(self->error,"line %d: Expected a type (or void)",self->jack_tokenizer->line);
             return 0;
         };
     }
@@ -365,7 +368,7 @@ int CompileSubroutineDec(CompilationEngine* self) {
 int CompileParameterList(CompilationEngine* self) {
     writeOut(self,"<parameterList>\n");
     self->tab++;
-    const JackTokenizer* tokenizer = self->jack_tokenizer;
+    JackTokenizer* tokenizer = self->jack_tokenizer;
     while (
         tokenType(tokenizer) == KEYWORD &&
         ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN))
@@ -625,118 +628,77 @@ void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* 
 int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");
     self->tab++;
-    char* errors = malloc(sizeof(char) * 100);
-    if (errors == NULL) {
-        printf("Failed to alocate errors[100]");
-        return 0;
-    }
-    errors[0] = '\0';
-    size_t errors_size = 100;
-    if (!compileIntConstant(self)) {
-        writeAndRealloc(&errors_size,&errors,self);
-    }
-    else {
+    if (compileIntConstant(self)) {
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
-    if (!compileStringConstant(self)) {
-        writeAndRealloc(&errors_size,&errors,self);
-    }
-    else {
+    if (compileStringConstant(self)) {
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
     const Keyword kws[] = {TRUE,FALSE,KW_NULL,THIS};
-    if (!compileKeywords(self,kws,4)) {
-        writeAndRealloc(&errors_size,&errors,self);
-    }
-    else {
+    if (compileKeywords(self,kws,4)) {
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
     if (!compileIdentifier(self)) {
-        writeAndRealloc(&errors_size,&errors,self);
     }
     else if (compileSymbol(self,'[')) {
         if (!CompileExpression(self)) {
-            free(errors);
             return 0;
         }
         if (!compileSymbol(self,']')) {
-            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
     else if (compileSymbol(self,'.')) {
         if (!compileIdentifier(self)) {
-            free(errors);
             return 0;
         }
         if (!compileSymbol(self,'(')) {
-            free(errors);
             return 0;
         }
         if (!CompileExpressionList(self)) {
-            free(errors);
             return 0;
         }
         if (!compileSymbol(self,')')) {
-            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
     else {
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
-    if (!compileSymbol(self,'(')) {
-        writeAndRealloc(&errors_size,&errors,self);
-    }
-    else {
+    if (compileSymbol(self,'(')) {
         if (!CompileExpression(self)) {
-            free(errors);
             return 0;
         }
         if (!compileSymbol(self,')')) {
-            free(errors);
             return 0;
         }
         self->tab--;
         writeOut(self,"</term>\n");
-        free(errors);
         return 1;
     }
-    if (!compileUnaryOperator(self)) {
-        writeAndRealloc(&errors_size,&errors,self);
-    }
-    else {
+    if (compileUnaryOperator(self)) {
         if(CompileTerm(self)) {
             self->tab--;
             writeOut(self,"</term>\n");
-            free(errors);
             return 1;
         }
-        free(errors);
         return 0;
     }
-    strncpy(self->error,errors,100);
-    free(errors);
+    sprintf(self->error,"line %d: Expected a term",self->jack_tokenizer->line);
     return 0;
 }
 int CompileSubroutineCall(CompilationEngine* self) {

@@ -21,7 +21,7 @@ JackTokenizer* JT_Constructor(char *source) {
     self->line = 1;
     return self;
 }
-int hasMoreTokens(const JackTokenizer *self) {
+int hasMoreTokens(JackTokenizer *self) {
     return tokenType(self)!=EOF_TOKEN;
 }
 int isWhitespace(char c) {
@@ -36,7 +36,7 @@ void skipWhitespace(JackTokenizer *self) {
     }
 }
 void skipComments(JackTokenizer *self) {
-    if (!self || !self->cursor) {
+    if (self == NULL || self->cursor == NULL) {
         return;
     }
     while (self->cursor[0] == '/' && (self->cursor[1] == '/' || self->cursor[1] == '*')) {

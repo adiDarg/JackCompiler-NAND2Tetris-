@@ -7,9 +7,9 @@
 enum SymbolKind {
     SK_STATIC,
     SK_FIELD,
-    ARG,
+    SK_ARG,
     SK_VAR,
-    NONE
+    SK_NONE
 } typedef SymbolKind;
 struct SymbolValue {
     char name[];

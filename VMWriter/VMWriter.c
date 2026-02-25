@@ -16,21 +16,21 @@ VMWriter* constructor(const char pathStr[],const int strLength) {
 }
 char* getSegmentString(const Segment segment) {
     switch (segment) {
-        case CONST:
+        case SEG_CONST:
             return "constant";
-        case ARG:
+        case SEG_ARG:
             return "argument";
-        case LOCAL:
+        case SEG_LOCAL:
             return "local";
-        case STATIC:
+        case SEG_STATIC:
             return "static";
-        case THIS:
+        case SEG_THIS:
             return "this";
-        case THAT:
+        case SEG_THAT:
             return "that";
-        case POINTER:
+        case SEG_POINTER:
             return "pointer";
-        case TEMP:
+        case SEG_TEMP:
             return "temp";
         default:
             return "";
@@ -38,23 +38,23 @@ char* getSegmentString(const Segment segment) {
 }
 char* getCommandString(const Command command) {
     switch (command) {
-        case ADD:
+        case CMD_ADD:
             return "add";
-        case SUB:
+        case CMD_SUB:
             return "sub";
-        case NEG:
+        case CMD_NEG:
             return "neg";
-        case EQ:
+        case CMD_EQ:
             return "eq";
-        case GT:
+        case CMD_GT:
             return "gt";
-        case LT:
+        case CMD_LT:
             return "lt";
-        case AND:
+        case CMD_AND:
             return "and";
-        case OR:
+        case CMD_OR:
             return "or";
-        case NOT:
+        case CMD_NOT:
             return "not";
         default:
             return "";

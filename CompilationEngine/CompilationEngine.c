@@ -380,6 +380,7 @@ int CompileClassVarDec(CompilationEngine* self) {
     return 1;
 }
 int CompileSubroutineBody(CompilationEngine* self) {
+    startSubroutine(self->symbol_table);
     writeOut(self,"<subroutineBody>\n");
     self->tab++;
     JackTokenizer* tokenizer = self->jack_tokenizer;

@@ -5,10 +5,10 @@
 #ifndef SYMBOLTABLE_H
 #define SYMBOLTABLE_H
 enum SymbolKind {
-    STATIC,
-    FIELD,
+    SK_STATIC,
+    SK_FIELD,
     ARG,
-    VAR,
+    SK_VAR,
     NONE
 } typedef SymbolKind;
 struct SymbolValue {

@@ -7,8 +7,8 @@
 #include <stdio.h>
 enum Segment {
     CONST, ARG,
-    LOCAL, STATIC,
-    THIS, THAT,
+    LOCAL, SEG_STATIC,
+    SEG_THIS, THAT,
     POINTER, TEMP
 } typedef Segment;
 enum Command {

@@ -17,17 +17,19 @@ enum Command {
     GT, LT,
     AND, OR, NOT
 } typedef Command;
-FILE* fptr;
-void constructor(const char pathStr[],const int strLength);
-void writePop(const Segment segment, const int index);
-void writeArithmetic(const Command command);
-void writeLabel(const char label[]);
-void writeGoTo(const char label[]);
-void writeIf(const char label[]);
-void writeCall(const char name[], const int nArgs);
-void writeFunction(const char name[], const int nLocals);
-void writeReturn();
-void close();
+typedef struct {
+    FILE* fptr;
+} VMWriter;
+VMWriter* constructor(const char pathStr[],const int strLength);
+void writePop(const VMWriter *self, const Segment segment, const int index);
+void writeArithmetic(const VMWriter *self, const Command command);
+void writeLabel(const VMWriter *self, const char label[]);
+void writeGoTo(const VMWriter *self, const char label[]);
+void writeIf(const VMWriter *self, const char label[]);
+void writeCall(const VMWriter *self, const char name[], const int nArgs);
+void writeFunction(const VMWriter *self, const char name[], const int nLocals);
+void writeReturn(const VMWriter *self);
+void close(VMWriter *self);
 
 
 #endif //VMWRITER_H

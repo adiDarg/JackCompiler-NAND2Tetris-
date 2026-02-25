@@ -6,11 +6,13 @@
 
 #include <stdlib.h>
 
-void constructor(const char pathStr[],const int strLength) {
-    fptr = fopen(pathStr,"w");
-    if (fptr == NULL) {
+VMWriter* constructor(const char pathStr[],const int strLength) {
+    VMWriter* vm_writer = malloc(sizeof(VMWriter));
+    vm_writer->fptr = fopen(pathStr,"w");
+    if (vm_writer->fptr == NULL) {
         printf("Failed to open file for writing: %s", pathStr);
     }
+    return vm_writer;
 }
 char* getSegmentString(const Segment segment) {
     switch (segment) {
@@ -58,34 +60,35 @@ char* getCommandString(const Command command) {
             return "";
     }
 }
-void writePop(const Segment segment, const int index) {
+void writePop(const VMWriter *self, const Segment segment, const int index) {
     const char *segmentString = getSegmentString(segment);
-    fprintf(fptr,"pop %s %d\n",segmentString,index);
+    fprintf(self->fptr,"pop %s %d\n",segmentString,index);
 }
-void writeArithmetic(const Command command) {
+void writeArithmetic(const VMWriter *self, const Command command) {
     const char *commandString = getCommandString(command);
-    fprintf(fptr,"%s\n",commandString);
+    fprintf(self->fptr,"%s\n",commandString);
 }
-void writeLabel(const char label[]) {
-    fprintf(fptr,"(%s)\n",label);
+void writeLabel(const VMWriter *self, const char label[]) {
+    fprintf(self->fptr,"(%s)\n",label);
 }
-void writeGoTo(const char label[]) {
-    fprintf(fptr,"goto %s\n",label);
+void writeGoTo(const VMWriter *self, const char label[]) {
+    fprintf(self->fptr,"goto %s\n",label);
 }
-void writeIf(const char label[]) {
-    fprintf(fptr,"if-goto %s\n",label);
+void writeIf(const VMWriter *self, const char label[]) {
+    fprintf(self->fptr,"if-goto %s\n",label);
 }
-void writeCall(const char name[], const int nArgs) {
-    fprintf(fptr,"call %s %d\n",name,nArgs);
+void writeCall(const VMWriter *self, const char name[], const int nArgs) {
+    fprintf(self->fptr,"call %s %d\n",name,nArgs);
 }
-void writeFunction(const char name[], const int nLocals) {
-    fprintf(fptr,"function %s %d\n",name,nLocals);
+void writeFunction(const VMWriter *self, const char name[], const int nLocals) {
+    fprintf(self->fptr,"function %s %d\n",name,nLocals);
 }
-void writeReturn() {
-    fprintf(fptr,"return\n");
+void writeReturn(const VMWriter *self) {
+    fprintf(self->fptr,"return\n");
 }
-void close() {
-    fclose(fptr);
+void close(VMWriter *self) {
+    fclose(self->fptr);
+    free(self);
 }
 
 

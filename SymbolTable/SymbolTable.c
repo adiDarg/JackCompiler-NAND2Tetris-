@@ -14,7 +14,7 @@ SymbolTable* constructor(const int tableSize) {
     table->subroutineScope = malloc(tableSize * sizeof(SymbolList*));
     for (int i = 0; i < tableSize; i++) {
         table->classScope[i] = NULL;
-        table->subroutineScope = NULL;
+        table->subroutineScope[i] = NULL;
     }
     table->argIndex = 0;
     table->fieldIndex = 0;
@@ -28,16 +28,16 @@ SymbolList** getScope(const SymbolTable* self,const SymbolKind kind) {
         self->subroutineScope;
 }
 
-void startSubroutine(SymbolTable* self) {
+void startSubroutine(const SymbolTable* self) {
     for (int i = 0; i < self->size; i++) {
-        self->subroutineScope = NULL;
+        self->subroutineScope[i] = NULL;
     }
 }
-unsigned int hash(const char name[], const int length) {
+unsigned int hash(const char s[], const int length) {
     //FNV-1a
     unsigned int val = 2166136261u;
     for (int i = 0; i < length; i++) {
-        val ^= (unsigned char) name[i];
+        val ^= (unsigned char) s[i];
         val *= 16777619u;
     }
     return val;
@@ -49,7 +49,7 @@ void addSymbolToTable(const SymbolTable *self,const SymbolKind kind, const int h
     while (*listPtr != NULL) {
         listPtr = &(*listPtr)->next;
     }
-    *listPtr = malloc(sizeof(SymbolTable));
+    *listPtr = malloc(sizeof(SymbolList));
     (*listPtr)->symbol = symbol;
     (*listPtr)->next = NULL;
 }
@@ -156,4 +156,24 @@ int indexOf(const SymbolTable *self,const char name[], const int length) {
         list = list->next;
     }
     return -1;
+}
+void destroySymbolList(SymbolList* list) {
+    while (list != NULL) {
+        SymbolList* temp = list;
+        list = list->next;
+        free(temp);
+    }
+}
+
+void destroySymbolTable(SymbolTable* self) {
+    if (self == NULL) return;
+
+    for (int i = 0; i < self->size; i++) {
+        destroySymbolList(self->classScope[i]);
+        destroySymbolList(self->subroutineScope[i]);
+    }
+
+    free(self->classScope);
+    free(self->subroutineScope);
+    free(self);
 }

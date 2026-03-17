@@ -11,15 +11,15 @@ const typedef struct {
     Keyword kw;
 } TextKeywordStruct;
 TextKeywordStruct keyword_table[] = {
-    {"class", KW_CLASS}, {"constructor", KW_CONSTRUCTOR},
-    {"function", KW_FUNCTION}, {"method", KW_METHOD},
-    {"field", KW_FIELD}, {"static", KW_STATIC},
-    {"var", KW_VAR}, {"int", KW_INT}, {"char", KW_CHAR},
-    {"boolean", KW_BOOLEAN}, {"void", KW_VOID},
-    {"true", KW_TRUE}, {"false", KW_FALSE},
-    {"null", KW_NULL}, {"this", KW_THIS},
-    {"let", KW_LET}, {"do", KW_DO}, {"if", KW_IF},
-    {"else", KW_ELSE}, {"while", KW_WHILE}, {"return", KW_RETURN}
+    {"class", CLASS}, {"constructor", CONSTRUCTOR},
+    {"function", FUNCTION}, {"method", METHOD},
+    {"field", FIELD}, {"static", STATIC},
+    {"var", VAR}, {"int", INT}, {"char", CHAR},
+    {"boolean", BOOLEAN}, {"void", VOID},
+    {"true", TRUE}, {"false", FALSE},
+    {"null", KW_NULL}, {"this", THIS},
+    {"let", LET}, {"do", DO}, {"if", IF},
+    {"else", ELSE}, {"while", WHILE}, {"return", RETURN}
 };
 int keyword_lookup(const char *s, Keyword *out) {
     for (size_t i = 0; i < sizeof keyword_table / sizeof *keyword_table; i++) {

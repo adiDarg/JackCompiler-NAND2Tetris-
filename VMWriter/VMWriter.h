@@ -6,16 +6,16 @@
 #define VMWRITER_H
 #include <stdio.h>
 enum Segment {
-    SEG_CONST, SEG_ARG,
-    SEG_LOCAL, SEG_STATIC,
-    SEG_THIS, SEG_THAT,
-    SEG_POINTER, SEG_TEMP
+    CONST, ARG,
+    LOCAL, SEG_STATIC,
+    SEG_THIS, THAT,
+    POINTER, TEMP
 } typedef Segment;
 enum Command {
-    CMD_ADD, CMD_SUB,
-    CMD_NEG, CMD_EQ,
-    CMD_GT, CMD_LT,
-    CMD_AND, CMD_OR, CMD_NOT
+    ADD, SUB,
+    NEG, EQ,
+    GT, LT,
+    AND, OR, NOT
 } typedef Command;
 typedef struct {
     FILE* fptr;

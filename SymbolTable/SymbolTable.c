@@ -24,7 +24,7 @@ SymbolTable* constructor(const int tableSize) {
     return table;
 }
 SymbolList** getScope(const SymbolTable* self,const SymbolKind kind) {
-    return (kind == SK_FIELD || kind == SK_STATIC) ?
+    return (kind == FIELD || kind == STATIC) ?
         self->classScope :
         self->subroutineScope;
 }
@@ -64,22 +64,22 @@ void define(SymbolTable* self, char name[],const int nameLength, char type[],con
     strcpy(symbol.name,name);
     strcpy(symbol.type,type);
     switch (kind) {
-        case SK_FIELD: {
+        case FIELD: {
             symbol.index = self->fieldIndex;
             self->fieldIndex++;
             break;
         }
-        case SK_STATIC: {
+        case STATIC: {
             symbol.index = self->staticIndex;
             self->staticIndex++;
             break;
         }
-        case SK_ARG: {
+        case ARG: {
             symbol.index = self->argIndex;
             self->argIndex++;
             break;
         }
-        case SK_VAR: {
+        case VAR: {
             symbol.index = self->varIndex;
             self->varIndex++;
             break;
@@ -95,13 +95,13 @@ void define(SymbolTable* self, char name[],const int nameLength, char type[],con
 }
 int varCount(const SymbolTable *self,const SymbolKind kind) {
     switch (kind) {
-        case SK_FIELD:
+        case FIELD:
             return self->fieldIndex;
-        case SK_STATIC:
+        case STATIC:
             return self->staticIndex;
-        case SK_VAR:
+        case VAR:
             return self->varIndex;
-        case SK_ARG:
+        case ARG:
             return self->argIndex;
         default:
             return 0;
@@ -123,7 +123,7 @@ SymbolKind kindOf(const SymbolTable *self,const char name[], const int length) {
         }
         list = list->next;
     }
-    return SK_NONE;
+    return NONE;
 }
 char* typeOf(const SymbolTable *self,const char name[], const int length) {
     const int hashVal = hash(name,length) % self->size;
@@ -170,7 +170,7 @@ void destroySymbolList(SymbolList* list) {
 }
 
 void destroySymbolTable(SymbolTable* self) {
-    if (self==NULL) return;
+    if (self == NULL) return;
 
     for (int i = 0; i < self->size; i++) {
         destroySymbolList(self->classScope[i]);

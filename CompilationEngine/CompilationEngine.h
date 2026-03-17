@@ -10,10 +10,11 @@
 #include <stdio.h>
 typedef struct {
     SymbolKind kind;
-    char name[];
     int nameLength;
-    char type[];
     int typeLength;
+    char *name;
+    char *type;
+
 } SymbolTableInfo;
 typedef struct {
     JackTokenizer *jack_tokenizer;
@@ -26,7 +27,7 @@ typedef struct {
     int tab;
     SymbolTableInfo *stInfo;
 }CompilationEngine;
-CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer);
+CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer, VMWriter *vm_writer);
 int CompileClass(CompilationEngine *self);
 int CompileClassVarDec(CompilationEngine *self);
 int CompileSubroutineDec(CompilationEngine *self);

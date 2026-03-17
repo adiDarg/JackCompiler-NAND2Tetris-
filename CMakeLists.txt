@@ -11,4 +11,8 @@ add_executable(JackCompiler main.c
         JackTokenizer/jackTokenizer.h
         CompilationEngine/CompilationEngine.c
         CompilationEngine/CompilationEngine.h
-        JackAnalyzer/JackAnalyzer.h)
+        JackAnalyzer/JackAnalyzer.h
+        SymbolTable/SymbolTable.c
+        SymbolTable/SymbolTable.h
+        VMWriter/VMWriter.c
+        VMWriter/VMWriter.h)

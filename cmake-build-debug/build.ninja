@@ -79,6 +79,18 @@ build CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj: C_C
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\CompilationEngine
 
+build CMakeFiles/JackCompiler.dir/SymbolTable/SymbolTable.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SymbolTable/SymbolTable.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\SymbolTable\SymbolTable.c.obj.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SymbolTable
+
+build CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/VMWriter/VMWriter.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\VMWriter\VMWriter.c.obj.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\VMWriter
+
 
 # =============================================================================
 # Link build statements for EXECUTABLE target JackCompiler
@@ -87,7 +99,7 @@ build CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj: C_C
 #############################################
 # Link the executable JackCompiler.exe
 
-build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj
+build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj CMakeFiles/JackCompiler.dir/SymbolTable/SymbolTable.c.obj CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\JackCompiler.dir

@@ -12,10 +12,10 @@ enum SymbolKind {
     SK_NONE
 } typedef SymbolKind;
 struct SymbolValue {
-    char name[];
-    char type[];
     SymbolKind kind;
     int index;
+    char *name;
+    char *type;
 } typedef Symbol;
 struct SymbolList {
     Symbol symbol;
@@ -33,10 +33,10 @@ struct SymbolTable {
 } typedef SymbolTable;
 
 SymbolTable* constructor();
-void startSubroutine(SymbolTable* self);
-void define(SymbolTable* self,char name[],char type[], SymbolKind kind);
-int varCount(SymbolTable* self, SymbolKind kind);
-SymbolKind kindOf(SymbolTable* self, char name[]);
-char* typeOf(SymbolTable* self, char name[]);
-int indexOf(SymbolTable* self, char name[]);
+void startSubroutine(const SymbolTable *self);
+void define(SymbolTable* self,char name[],const int nameLength, char type[],const int typeLength, SymbolKind kind);
+int varCount(const SymbolTable* self, SymbolKind kind);
+SymbolKind kindOf(const SymbolTable* self,const char name[], const int length);
+char* typeOf(const SymbolTable* self,const char name[], const int length);
+int indexOf(const SymbolTable* self,const char name[], const int length);
 #endif //SYMBOLTABLE_H

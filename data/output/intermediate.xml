@@ -1,54 +1,11 @@
 <class>
   <keyword> class </keyword>
-  <identifier> Fibonacci </identifier>
+  <identifier> Main </identifier>
   <symbol> { </symbol>
-  <classVarDec>
-    <keyword> field </keyword>
-    <keyword> int </keyword>
-    <identifier> last </identifier>
-    <symbol> ; </symbol>
-  </classVarDec>
-  <subroutineDec>
-    <keyword> constructor </keyword>
-    <identifier> Fibonacci </identifier>
-    <identifier> new </identifier>
-    <symbol> ( </symbol>
-    <parameterList>
-      <keyword> int </keyword>
-      <identifier> value </identifier>
-    </parameterList>
-    <symbol> ) </symbol>
-    <subroutineBody>
-      <symbol> { </symbol>
-      <statements>
-        <letStatement>
-          <keyword> let </keyword>
-          <identifier> last </identifier>
-          <symbol> = </symbol>
-          <expression>
-            <term>
-              <identifier> value </identifier>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </letStatement>
-        <returnStatement>
-          <keyword> return </keyword>
-          <expression>
-            <term>
-              <keyword> this </keyword>
-            </term>
-          </expression>
-          <symbol> ; </symbol>
-        </returnStatement>
-      </statements>
-      <symbol> } </symbol>
-    </subroutineBody>
-  </subroutineDec>
   <subroutineDec>
     <keyword> function </keyword>
     <keyword> void </keyword>
-    <identifier> print </identifier>
+    <identifier> main </identifier>
     <symbol> ( </symbol>
     <parameterList>
     </parameterList>
@@ -57,35 +14,76 @@
       <symbol> { </symbol>
       <varDec>
         <keyword> var </keyword>
-        <keyword> int </keyword>
-        <identifier> prev </identifier>
+        <identifier> Array </identifier>
+        <identifier> a </identifier>
         <symbol> ; </symbol>
       </varDec>
       <varDec>
         <keyword> var </keyword>
         <keyword> int </keyword>
-        <identifier> curr </identifier>
+        <identifier> length </identifier>
+        <symbol> ; </symbol>
+      </varDec>
+      <varDec>
+        <keyword> var </keyword>
+        <keyword> int </keyword>
+        <identifier> i </identifier>
+        <symbol> , </symbol>
+        <identifier> sum </identifier>
         <symbol> ; </symbol>
       </varDec>
       <statements>
         <letStatement>
           <keyword> let </keyword>
-          <identifier> prev </identifier>
+          <identifier> length </identifier>
           <symbol> = </symbol>
           <expression>
             <term>
-              <integerConstant> 1 </integerConstant>
+              <identifier> Keyboard </identifier>
+              <symbol> . </symbol>
+              <identifier> readInt </identifier>
+              <symbol> ( </symbol>
+              <expressionList>
+                <expression>
+                  <term>
+                    <stringConstant> How many numbers?  </stringConstant>
+                  </term>
+                </expression>
+              </expressionList>
+              <symbol> ) </symbol>
             </term>
           </expression>
           <symbol> ; </symbol>
         </letStatement>
         <letStatement>
           <keyword> let </keyword>
-          <identifier> curr </identifier>
+          <identifier> a </identifier>
           <symbol> = </symbol>
           <expression>
             <term>
-              <integerConstant> 1 </integerConstant>
+              <identifier> Array </identifier>
+              <symbol> . </symbol>
+              <identifier> new </identifier>
+              <symbol> ( </symbol>
+              <expressionList>
+                <expression>
+                  <term>
+                    <identifier> length </identifier>
+                  </term>
+                </expression>
+              </expressionList>
+              <symbol> ) </symbol>
+            </term>
+          </expression>
+          <symbol> ; </symbol>
+        </letStatement>
+        <letStatement>
+          <keyword> let </keyword>
+          <identifier> i </identifier>
+          <symbol> = </symbol>
+          <expression>
+            <term>
+              <integerConstant> 0 </integerConstant>
             </term>
           </expression>
           <symbol> ; </symbol>
@@ -95,58 +93,78 @@
           <symbol> ( </symbol>
           <expression>
             <term>
-              <identifier> curr </identifier>
+              <identifier> i </identifier>
             </term>
             <symbol> &lt; </symbol>
             <term>
-              <identifier> last </identifier>
+              <identifier> length </identifier>
             </term>
           </expression>
           <symbol> ) </symbol>
           <symbol> { </symbol>
           <statements>
-            <doStatement>
-              <keyword> do </keyword>
-              <identifier> Output </identifier>
-              <symbol> . </symbol>
-              <identifier> printString </identifier>
-              <symbol> ( </symbol>
-              <expressionList>
-                <expression>
-                  <term>
-                    <identifier> curr </identifier>
-                  </term>
-                </expression>
-              </expressionList>
-              <symbol> ) </symbol>
-              <symbol> ; </symbol>
-            </doStatement>
             <letStatement>
               <keyword> let </keyword>
-              <identifier> curr </identifier>
+              <identifier> a </identifier>
+              <symbol> [ </symbol>
+              <expression>
+                <term>
+                  <identifier> i </identifier>
+                </term>
+              </expression>
+              <symbol> ] </symbol>
               <symbol> = </symbol>
               <expression>
                 <term>
-                  <identifier> curr </identifier>
-                </term>
-                <symbol> + </symbol>
-                <term>
-                  <identifier> prev </identifier>
+                  <identifier> Keyboard </identifier>
+                  <symbol> . </symbol>
+                  <identifier> readInt </identifier>
+                  <symbol> ( </symbol>
+                  <expressionList>
+                    <expression>
+                      <term>
+                        <stringConstant> Enter a number:  </stringConstant>
+                      </term>
+                    </expression>
+                  </expressionList>
+                  <symbol> ) </symbol>
                 </term>
               </expression>
               <symbol> ; </symbol>
             </letStatement>
             <letStatement>
               <keyword> let </keyword>
-              <identifier> prev </identifier>
+              <identifier> sum </identifier>
               <symbol> = </symbol>
               <expression>
                 <term>
-                  <identifier> curr </identifier>
+                  <identifier> sum </identifier>
                 </term>
-                <symbol> - </symbol>
+                <symbol> + </symbol>
                 <term>
-                  <identifier> prev </identifier>
+                  <identifier> a </identifier>
+                  <symbol> [ </symbol>
+                  <expression>
+                    <term>
+                      <identifier> i </identifier>
+                    </term>
+                  </expression>
+                  <symbol> ] </symbol>
+                </term>
+              </expression>
+              <symbol> ; </symbol>
+            </letStatement>
+            <letStatement>
+              <keyword> let </keyword>
+              <identifier> i </identifier>
+              <symbol> = </symbol>
+              <expression>
+                <term>
+                  <identifier> i </identifier>
+                </term>
+                <symbol> + </symbol>
+                <term>
+                  <integerConstant> 1 </integerConstant>
                 </term>
               </expression>
               <symbol> ; </symbol>
@@ -154,6 +172,42 @@
           </statements>
           <symbol> } </symbol>
         </whileStatement>
+        <doStatement>
+          <keyword> do </keyword>
+          <identifier> Output </identifier>
+          <symbol> . </symbol>
+          <identifier> printString </identifier>
+          <symbol> ( </symbol>
+          <expressionList>
+            <expression>
+              <term>
+                <stringConstant> The average is  </stringConstant>
+              </term>
+            </expression>
+          </expressionList>
+          <symbol> ) </symbol>
+          <symbol> ; </symbol>
+        </doStatement>
+        <doStatement>
+          <keyword> do </keyword>
+          <identifier> Output </identifier>
+          <symbol> . </symbol>
+          <identifier> printInt </identifier>
+          <symbol> ( </symbol>
+          <expressionList>
+            <expression>
+              <term>
+                <identifier> sum </identifier>
+              </term>
+              <symbol> / </symbol>
+              <term>
+                <identifier> length </identifier>
+              </term>
+            </expression>
+          </expressionList>
+          <symbol> ) </symbol>
+          <symbol> ; </symbol>
+        </doStatement>
         <returnStatement>
           <keyword> return </keyword>
           <symbol> ; </symbol>

@@ -6,7 +6,7 @@
 
 #include <stdlib.h>
 
-VMWriter* constructor(const char pathStr[],const int strLength) {
+VMWriter* vm_constructor(const char pathStr[],const int strLength) {
     VMWriter* vm_writer = malloc(sizeof(VMWriter));
     vm_writer->fptr = fopen(pathStr,"w");
     if (vm_writer->fptr == NULL) {
@@ -86,7 +86,7 @@ void writeFunction(const VMWriter *self, const char name[], const int nLocals) {
 void writeReturn(const VMWriter *self) {
     fprintf(self->fptr,"return\n");
 }
-void close(VMWriter *self) {
+void closeWriter(VMWriter *self) {
     fclose(self->fptr);
     free(self);
 }

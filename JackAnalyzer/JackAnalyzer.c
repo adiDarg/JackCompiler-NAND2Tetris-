@@ -8,6 +8,7 @@
 
 #include "../JackTokenizer/jackTokenizer.h"
 #include "JackAnalyzer.h"
+#include "../VMWriter/VMWriter.h"
 
 #include "../CompilationEngine/CompilationEngine.h"
 
@@ -17,7 +18,7 @@ void operateOnFile(char path[],char destination[]) {
     const int reg = (path_stat.st_mode & _S_IFREG);
     if (reg) {
         FILE *fp = fopen(path, "rb");   // binary mode
-        if (!fp) {
+        if (fp == NULL) {
             printf("Can't open file");
             return;
         }
@@ -31,7 +32,8 @@ void operateOnFile(char path[],char destination[]) {
             const size_t read = fread(source_code,1,fsize,fp);
             source_code[read] = '\0';
             JackTokenizer *jack_tokenizer = JT_Constructor(source_code);
-            CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer);
+            VMWriter *writer = vm_constructor(path,100);
+            CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer, writer);
             const int success = CompileClass(compilation_engine);
             printf(success? "Success!\n": "Fail!\n");
             printf(!success? compilation_engine->error: "");
@@ -41,7 +43,7 @@ void operateOnFile(char path[],char destination[]) {
             const int reg_dest = S_ISREG(path_stat_dest.st_mode);
             if (reg_dest) {
                 FILE *fp_dest = fopen(destination, "wb");   // binary mode
-                if (!fp_dest) return;
+                if (fp_dest == NULL) return;
 
                 fseek(fp, 0, SEEK_END);
                 rewind(fp_dest);

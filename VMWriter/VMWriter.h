@@ -20,7 +20,7 @@ enum Command {
 typedef struct {
     FILE* fptr;
 } VMWriter;
-VMWriter* constructor(const char pathStr[],const int strLength);
+VMWriter* vm_constructor(const char pathStr[],const int strLength);
 void writePop(const VMWriter *self, const Segment segment, const int index);
 void writeArithmetic(const VMWriter *self, const Command command);
 void writeLabel(const VMWriter *self, const char label[]);
@@ -29,7 +29,7 @@ void writeIf(const VMWriter *self, const char label[]);
 void writeCall(const VMWriter *self, const char name[], const int nArgs);
 void writeFunction(const VMWriter *self, const char name[], const int nLocals);
 void writeReturn(const VMWriter *self);
-void close(VMWriter *self);
+void closeWriter(VMWriter *self);
 
 
 #endif //VMWRITER_H

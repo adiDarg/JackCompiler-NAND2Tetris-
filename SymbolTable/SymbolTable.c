@@ -4,6 +4,7 @@
 
 #include "SymbolTable.h"
 
+#include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -28,7 +29,8 @@ SymbolList** getScope(const SymbolTable* self,const SymbolKind kind) {
         self->subroutineScope;
 }
 
-void startSubroutine(const SymbolTable* self) {
+void startSubroutine(const SymbolTable *self) {
+    printf("subroutine");
     for (int i = 0; i < self->size; i++) {
         self->subroutineScope[i] = NULL;
     }
@@ -53,10 +55,12 @@ void addSymbolToTable(const SymbolTable *self,const SymbolKind kind, const int h
     (*listPtr)->symbol = symbol;
     (*listPtr)->next = NULL;
 }
-void define(SymbolTable* self, char name[],const int nameLength, char type[], const SymbolKind kind) {
+void define(SymbolTable* self, char name[],const int nameLength, char type[],const int typeLength, const SymbolKind kind) {
     //Initialize symbol for symbol table - saves info of identifier
     Symbol symbol;
     symbol.kind = kind;
+    symbol.name = malloc(nameLength);
+    symbol.type = malloc(typeLength);
     strcpy(symbol.name,name);
     strcpy(symbol.type,type);
     switch (kind) {

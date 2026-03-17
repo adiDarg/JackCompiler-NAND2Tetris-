@@ -27,7 +27,7 @@ typedef struct {
 
 
 JackTokenizer* JT_Constructor(char *source);
-int hasMoreTokens(const JackTokenizer *self);
+int hasMoreTokens(JackTokenizer *self);
 void advance(JackTokenizer *self);
 int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);

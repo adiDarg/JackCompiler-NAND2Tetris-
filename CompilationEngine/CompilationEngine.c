@@ -9,13 +9,13 @@
 
 #include <stdlib.h>
 #include <string.h>
-#define DEFINESYMBOL() define(self->symbol_table,st_info->name,st_info->type,st_info->kind);
+#define DEFINESYMBOL() define(self->symbol_table,st_info->name,sizeof(st_info->name),st_info->type,sizeof(st_info->type),st_info->kind);
 
 CompilationEngine* Construct_Engine(JackTokenizer *jack_tokenizer, VMWriter *vm_writer) {
     CompilationEngine* self = malloc(sizeof(CompilationEngine));
     self->jack_tokenizer = jack_tokenizer;
     self->vm_writer = vm_writer;
-    self->symbol_table = constructor();
+    self->symbol_table = constructor(100);
     self->out = malloc(8192);
     self->out[0] = '\0';
     self->tab=0;
@@ -24,9 +24,9 @@ CompilationEngine* Construct_Engine(JackTokenizer *jack_tokenizer, VMWriter *vm_
     self->error[0] = '\0';
     self->stInfo = malloc(sizeof(SymbolTableInfo));
     self->stInfo->nameLength = 100;
-    self->stInfo->name[self->stInfo->nameLength];
     self->stInfo->typeLength = 100;
-    self->stInfo->type[self->stInfo->typeLength];
+    self->stInfo->name = malloc(self->stInfo->nameLength + 1);
+    self->stInfo->type = malloc(self->stInfo->typeLength + 1);
     return self;
 }
 void calcSymbolKind(const CompilationEngine *self) {

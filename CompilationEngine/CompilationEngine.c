@@ -454,7 +454,6 @@ int CompileStatements(CompilationEngine* self) {
 
     NodeAST* node = construct_ast_node(NODE_STATEMENTS,self->ast_curr,1,NULL);
     self->ast_curr = node;
-
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
         switch (keyword(self->jack_tokenizer)) {
@@ -488,7 +487,6 @@ int CompileStatements(CompilationEngine* self) {
                 break;
         }
     }
-
     self->tab--;
     writeOut(self,"</statements>\n");
     self->ast_curr = self->ast_curr->parent;

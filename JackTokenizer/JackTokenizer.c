@@ -21,7 +21,7 @@ JackTokenizer* JT_Constructor(char *source) {
     self->line = 1;
     return self;
 }
-int hasMoreTokens(const JackTokenizer *self) {
+int hasMoreTokens(JackTokenizer *self) {
     return tokenType(self)!=TT_EOF_TOKEN;
 }
 int isWhitespace(char c) {

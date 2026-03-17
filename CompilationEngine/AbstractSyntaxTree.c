@@ -1,7 +1,7 @@
 #include "AbstractSyntaxTree.h"
 
 #include <stdio.h>
-
+void printNode(const NodeAST* node);
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
                             const size_t childrenCount, Token *token) {
     NodeAST *node = malloc(sizeof(NodeAST));
@@ -10,6 +10,7 @@ NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
     node->children = malloc(childrenCount * sizeof(NodeAST*));
     node->parent = parent;
     node->token = token;
+    node->currChildIndex = 0;
     return node;
 }
 void destory_node(NodeAST *node) {
@@ -28,10 +29,14 @@ void destory_node(NodeAST *node) {
 
     free(node);
 }
+void printNode(const NodeAST* node) {
+    printf("Node:\nType:%d\nChildren count:%d\nToken:%d\n\n",
+        node->nodeType,(int)node->childrenCount,node->token == NULL? -1: node->token->type);
+}
 void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
     while (ast_curr->currChildIndex >= ast_curr->childrenCount) {
         ast_curr->childrenCount *= 2;
-        ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount);
+        ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
             printf("Unable to allocate children for AST");
             return;

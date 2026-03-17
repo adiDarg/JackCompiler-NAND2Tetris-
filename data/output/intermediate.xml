@@ -174,38 +174,42 @@
         </whileStatement>
         <doStatement>
           <keyword> do </keyword>
-          <identifier> Output </identifier>
-          <symbol> . </symbol>
-          <identifier> printString </identifier>
-          <symbol> ( </symbol>
-          <expressionList>
-            <expression>
-              <term>
-                <stringConstant> The average is  </stringConstant>
-              </term>
-            </expression>
-          </expressionList>
-          <symbol> ) </symbol>
+          <subroutineCall>
+            <identifier> Output </identifier>
+            <symbol> . </symbol>
+            <identifier> printString </identifier>
+            <symbol> ( </symbol>
+            <expressionList>
+              <expression>
+                <term>
+                  <stringConstant> The average is  </stringConstant>
+                </term>
+              </expression>
+            </expressionList>
+            <symbol> ) </symbol>
+          </subroutineCall>
           <symbol> ; </symbol>
         </doStatement>
         <doStatement>
           <keyword> do </keyword>
-          <identifier> Output </identifier>
-          <symbol> . </symbol>
-          <identifier> printInt </identifier>
-          <symbol> ( </symbol>
-          <expressionList>
-            <expression>
-              <term>
-                <identifier> sum </identifier>
-              </term>
-              <symbol> / </symbol>
-              <term>
-                <identifier> length </identifier>
-              </term>
-            </expression>
-          </expressionList>
-          <symbol> ) </symbol>
+          <subroutineCall>
+            <identifier> Output </identifier>
+            <symbol> . </symbol>
+            <identifier> printInt </identifier>
+            <symbol> ( </symbol>
+            <expressionList>
+              <expression>
+                <term>
+                  <identifier> sum </identifier>
+                </term>
+                <symbol> / </symbol>
+                <term>
+                  <identifier> length </identifier>
+                </term>
+              </expression>
+            </expressionList>
+            <symbol> ) </symbol>
+          </subroutineCall>
           <symbol> ; </symbol>
         </doStatement>
         <returnStatement>

@@ -37,7 +37,7 @@ void operateOnFile(char path[],char destination[]) {
 
             const int success = CompileClass(compilation_engine);
             NodeAST *root = compilation_engine->ast_root;
-            VMWriter *writer = vm_constructor(path,100);
+            //VMWriter *writer = vm_constructor(path,100);
             //Here, if success then we run semantic analysis
 
             printf(success? "Success!\n": "Fail!\n");
@@ -59,6 +59,7 @@ void operateOnFile(char path[],char destination[]) {
                 printf(printSuccess? "written to file":"failed to write to file");
             }
             free(source_code);
+            //free(writer);
             destory_node(root);
         }
         fclose(fp);

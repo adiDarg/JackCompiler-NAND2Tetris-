@@ -19,7 +19,7 @@ typedef struct AbstractSyntaxTreeNode {
     ASTnodeType nodeType;
     struct AbstractSyntaxTreeNode *parent;
     struct AbstractSyntaxTreeNode **children;
-    int currChildIndex = 0;
+    int currChildIndex;
     size_t childrenCount;
     Token *token;
     DataType dataType;

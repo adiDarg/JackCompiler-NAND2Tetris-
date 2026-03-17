@@ -15,4 +15,9 @@ add_executable(JackCompiler main.c
         SymbolTable/SymbolTable.c
         SymbolTable/SymbolTable.h
         VMWriter/VMWriter.c
-        VMWriter/VMWriter.h)
+        VMWriter/VMWriter.h
+        CompilationEngine/Token.h
+        CompilationEngine/DataType.h
+        CompilationEngine/Token.c
+        CompilationEngine/AbstractSyntaxTree.c
+        CompilationEngine/AbstractSyntaxTree.h)

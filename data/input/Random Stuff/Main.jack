@@ -1,0 +1,27 @@
+// This file is part of www.nand2tetris.org
+// and the book "The Elements of Computing Systems"
+// by Nisan and Schocken, MIT Press.
+// File name: projects/11/Pong/Ball.jack
+
+/**
+ * A graphical ball. Characterized by a screen location and distance of 
+ * last destination. Has methods for drawing, erasing and moving on the screen.
+ * The ball is displayed as a filled, 6-by-6 pixles rectangle. 
+ */
+class Main {
+    function void main() {
+     var Array a;
+     var int i;
+     var String message;
+
+     let message = Keyboard.readLine("What to say? ");
+     
+     let i = 0;
+     while (i < 100) {
+        do Output.printString(message);
+        do Output.println();
+        let i = i + 1;
+        }
+     return;
+   }
+}

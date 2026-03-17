@@ -55,6 +55,7 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
     writeOut(self,keyword_to_text(kw));
     writeOut(self," </keyword>\n");
     self->tab = temp;
+    token_ast_node(tokenizer,self->ast_curr);
     advance(tokenizer);
     return 1;
 }
@@ -74,6 +75,7 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
             writeOut(self,keyword_to_text(kw));
             writeOut(self," </keyword>\n");
             self->tab = temp;
+            token_ast_node(tokenizer,self->ast_curr);
             advance(tokenizer);
             strcpy(self->error,"\0");
             return 1;
@@ -98,6 +100,7 @@ int compileIdentifier(CompilationEngine* self) {
     writeOut(self, identifier(self->jack_tokenizer));
     writeOut(self," </identifier>\n");
     self->tab = temp;
+    token_ast_node(self->jack_tokenizer,self->ast_curr);
     advance(self->jack_tokenizer);
     return 1;
 }
@@ -136,6 +139,7 @@ int compileSymbol(CompilationEngine* self, char sym) {
     writeOut(self,str);
     writeOut(self, " </symbol>\n");
     self->tab = temp;
+    token_ast_node(tokenizer,self->ast_curr);
     advance(tokenizer);
     return 1;
 }
@@ -189,6 +193,7 @@ int compileIntConstant(CompilationEngine* self) {
     writeOut(self, str);
     writeOut(self," </integerConstant>\n");
     self->tab = temp;
+    token_ast_node(self->jack_tokenizer,self->ast_curr);
     advance(self->jack_tokenizer);
     return 1;
 }
@@ -207,6 +212,7 @@ int compileStringConstant(CompilationEngine* self) {
     writeOut(self, stringVal(self->jack_tokenizer));
     writeOut(self," </stringConstant>\n");
     self->tab = temp;
+    token_ast_node(self->jack_tokenizer,self->ast_curr);
     advance(self->jack_tokenizer);
     return 1;
 }
@@ -241,7 +247,7 @@ int compileUnaryOperator(CompilationEngine* self) {
     return compileSymbols(self,symbols,2);
 }
 int isTerm(const CompilationEngine* self) {
-    const JackTokenizer* tokenizer = self->jack_tokenizer;
+    JackTokenizer* tokenizer = self->jack_tokenizer;
     const int constant = tokenType(tokenizer) == TT_INT_CONST || tokenType(tokenizer) == TT_STRING_CONST;
     const Keyword kw = keyword(tokenizer);
     const int keywordConstant = tokenType(tokenizer) == TT_KEYWORD &&
@@ -255,10 +261,15 @@ int isTerm(const CompilationEngine* self) {
 int CompileClass(CompilationEngine *self) {
     writeOut(self,"<class>\n");
     self->tab++;
+
+    self->ast_root = construct_ast_node(NODE_ROOT,NULL,4,NULL);
+    self->ast_curr = self->ast_root;
+
     JackTokenizer* tokenizer = self->jack_tokenizer;
     advance(tokenizer);
     strcpy(tokenizer->error,"\0");
     tokenizer->isError = 0;
+
     if (!compileKeyword(self,KW_CLASS)) {
         return 0;
     }
@@ -290,6 +301,10 @@ int CompileClass(CompilationEngine *self) {
 int CompileClassVarDec(CompilationEngine* self) {
     writeOut(self,"<classVarDec>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_CLASS_VAR_DEC,self->ast_curr,4,NULL);
+    self->ast_curr = node;
+
     const Keyword arr[] = {KW_STATIC,KW_FIELD};
     if (!compileKeywords(self, arr, 2)) {
         return 0;
@@ -308,11 +323,16 @@ int CompileClassVarDec(CompilationEngine* self) {
     compileSymbol(self,';');
     self->tab--;
     writeOut(self,"</classVarDec>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileSubroutineBody(CompilationEngine* self) {
     writeOut(self,"<subroutineBody>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_BODY,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (!compileSymbol(self,'{')) {
         return 0;
@@ -330,11 +350,16 @@ int CompileSubroutineBody(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</subroutineBody>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileSubroutineDec(CompilationEngine* self) {
     writeOut(self,"<subroutineDec>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_DEC,self->ast_curr,7,NULL);
+    self->ast_curr = node;
+
     const Keyword arr[] = {KW_CONSTRUCTOR,KW_FUNCTION,KW_METHOD};
     if (!compileKeywords(self,arr,3)) {
         return 0;
@@ -362,11 +387,16 @@ int CompileSubroutineDec(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</subroutineDec>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileParameterList(CompilationEngine* self) {
     writeOut(self,"<parameterList>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_PARAMETER_LIST,self->ast_curr,0,NULL);
+    self->ast_curr = node;
+
     JackTokenizer* tokenizer = self->jack_tokenizer;
     while (
         tokenType(tokenizer) == TT_KEYWORD &&
@@ -386,11 +416,16 @@ int CompileParameterList(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</parameterList>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileVarDec(CompilationEngine* self) {
     writeOut(self,"<varDec>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_VAR_DEC,self->ast_curr,4,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_VAR)) {
         return 0;
     }
@@ -410,11 +445,15 @@ int CompileVarDec(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</varDec>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileStatements(CompilationEngine* self) {
     writeOut(self,"<statements>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_STATEMENTS,self->ast_curr,1,NULL);
+    self->ast_curr = node;
 
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
@@ -452,11 +491,16 @@ int CompileStatements(CompilationEngine* self) {
 
     self->tab--;
     writeOut(self,"</statements>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileLet(CompilationEngine* self) {
     writeOut(self,"<letStatement>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_LET_STATEMENT,self->ast_curr,5,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_LET)) {
         return 0;
     }
@@ -485,11 +529,16 @@ int CompileLet(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</letStatement>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileIf(CompilationEngine* self) {
     writeOut(self,"<ifStatement>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_IF_STATEMENT,self->ast_curr,7,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_IF)) {
         return 0;
     }
@@ -524,11 +573,16 @@ int CompileIf(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</ifStatement>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileWhile(CompilationEngine* self) {
     writeOut(self,"<whileStatement>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_WHILE_STATEMENT,self->ast_curr,7,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_WHILE)) {
         return 0;
     }
@@ -552,11 +606,16 @@ int CompileWhile(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</whileStatement>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_DO_STATEMENT,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_DO)) {
         return 0;
     }
@@ -568,11 +627,16 @@ int CompileDo(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</doStatement>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileReturn(CompilationEngine* self) {
     writeOut(self,"<returnStatement>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_RETURN_STATEMENT,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
     if (!compileKeyword(self,KW_RETURN)) {
         return 0;
     }
@@ -586,11 +650,16 @@ int CompileReturn(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</returnStatement>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileExpression(CompilationEngine* self) {
     writeOut(self,"<expression>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_EXPRESSION,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
     if (!CompileTerm(self)) {
         return 0;
     }
@@ -601,6 +670,7 @@ int CompileExpression(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</expression>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* self) {
@@ -614,7 +684,7 @@ void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* 
             new_size *= 2;
         }
         char* tmp = realloc(*errors, new_size);
-        if (!tmp) {
+        if (tmp == NULL) {
             printf("Allocation fail on writeAndRealloc");
             return;
         }
@@ -627,20 +697,27 @@ void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* 
 int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_TERM,self->ast_curr,4,NULL);
+    self->ast_curr = node;
+
     if (compileIntConstant(self)) {
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     if (compileStringConstant(self)) {
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     const Keyword kws[] = {KW_TRUE,KW_FALSE,KW_NULL,KW_THIS};
     if (compileKeywords(self,kws,4)) {
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     if (!compileIdentifier(self)) {
@@ -654,6 +731,7 @@ int CompileTerm(CompilationEngine* self) {
         }
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     else if (compileSymbol(self,'.')) {
@@ -676,6 +754,7 @@ int CompileTerm(CompilationEngine* self) {
     else {
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     if (compileSymbol(self,'(')) {
@@ -687,12 +766,14 @@ int CompileTerm(CompilationEngine* self) {
         }
         self->tab--;
         writeOut(self,"</term>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     if (compileUnaryOperator(self)) {
         if(CompileTerm(self)) {
             self->tab--;
             writeOut(self,"</term>\n");
+            self->ast_curr = self->ast_curr->parent;
             return 1;
         }
         return 0;
@@ -701,6 +782,11 @@ int CompileTerm(CompilationEngine* self) {
     return 0;
 }
 int CompileSubroutineCall(CompilationEngine* self) {
+    writeOut(self,"<subroutineCall>\n");
+    self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_CALL,self->ast_curr,6,NULL);
+    self->ast_curr = node;
     if (!compileIdentifier(self)) {
         return 0;
     }
@@ -718,11 +804,19 @@ int CompileSubroutineCall(CompilationEngine* self) {
     if (!compileSymbol(self,')')) {
         return 0;
     }
+
+    self->tab--;
+    writeOut(self,"</subroutineCall>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int CompileExpressionList(CompilationEngine* self) {
     writeOut(self,"<expressionList>\n");
     self->tab++;
+
+    NodeAST* node = construct_ast_node(NODE_EXPRESSION_LIST,self->ast_curr,1,NULL);
+    self->ast_curr = node;
+
     if (!isTerm(self)) {
         self->tab--;
         writeOut(self,"</expressionList>\n");
@@ -739,5 +833,6 @@ int CompileExpressionList(CompilationEngine* self) {
     }
     self->tab--;
     writeOut(self,"</expressionList>\n");
+    self->ast_curr = self->ast_curr->parent;
     return 1;
 }

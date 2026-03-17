@@ -6,9 +6,12 @@
 #define COMPILATIONENGINE_H
 #include "../JackTokenizer/jackTokenizer.h"
 #include <stdio.h>
+#include "AbstractSyntaxTree.h"
 typedef struct {
     JackTokenizer* jack_tokenizer;
     char *out;
+    NodeAST *ast_root; //Abstract Syntax Tree root and current nodes
+    NodeAST *ast_curr;
     size_t len;
     size_t cap;
     char error[100];

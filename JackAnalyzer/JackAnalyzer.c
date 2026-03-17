@@ -31,26 +31,35 @@ void operateOnFile(char path[],char destination[]) {
         if (source_code) {
             const size_t read = fread(source_code,1,fsize,fp);
             source_code[read] = '\0';
+
             JackTokenizer *jack_tokenizer = JT_Constructor(source_code);
-            VMWriter *writer = vm_constructor(path,100);
             CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer);
+
             const int success = CompileClass(compilation_engine);
+            NodeAST *root = compilation_engine->ast_root;
+            VMWriter *writer = vm_constructor(path,100);
+            //Here, if success then we run semantic analysis
+
             printf(success? "Success!\n": "Fail!\n");
             printf(!success? compilation_engine->error: "");
             printf("\n");
+
             struct stat path_stat_dest;
             stat(destination, &path_stat_dest);
             const int reg_dest = S_ISREG(path_stat_dest.st_mode);
+
             if (reg_dest) {
                 FILE *fp_dest = fopen(destination, "wb");   // binary mode
                 if (fp_dest == NULL) return;
 
                 fseek(fp, 0, SEEK_END);
                 rewind(fp_dest);
+
                 const int printSuccess = fprintf(fp_dest,success? compilation_engine->out: "<compilationError></compilationError>");
                 printf(printSuccess? "written to file":"failed to write to file");
             }
             free(source_code);
+            destory_node(root);
         }
         fclose(fp);
     }

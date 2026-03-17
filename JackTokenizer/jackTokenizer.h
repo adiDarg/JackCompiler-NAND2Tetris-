@@ -7,13 +7,13 @@
 #include "../Keyword/keyword.h"
 
 typedef enum {
-    KEYWORD,
-    SYMBOL,
-    INT_CONST,
-    STRING_CONST,
-    IDENTIFIER,
-    UNKNOWN_TOKEN,
-    EOF_TOKEN
+    TT_KEYWORD,
+    TT_SYMBOL,
+    TT_INT_CONST,
+    TT_STRING_CONST,
+    TT_IDENTIFIER,
+    TT_UNKNOWN_TOKEN,
+    TT_EOF_TOKEN
 } TokenType ;
 
 typedef struct {

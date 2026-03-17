@@ -22,7 +22,7 @@ JackTokenizer* JT_Constructor(char *source) {
     return self;
 }
 int hasMoreTokens(const JackTokenizer *self) {
-    return tokenType(self)!=EOF_TOKEN;
+    return tokenType(self)!=TT_EOF_TOKEN;
 }
 int isWhitespace(char c) {
     return c == ' ' || c == '\n' || c == '\t' || c == '\r';
@@ -60,7 +60,7 @@ void skipComments(JackTokenizer *self) {
     }
 }
 void advance(JackTokenizer *self) {
-    if (tokenType(self) == EOF_TOKEN) {
+    if (tokenType(self) == TT_EOF_TOKEN) {
         return;
     }
     self->buffer[0] = '\0';
@@ -128,26 +128,26 @@ TokenType tokenType(JackTokenizer *self) {
     const char* currentToken = self->buffer;
     const int len = strlen(self->buffer);
     if (len == 0) {
-        return EOF_TOKEN;
+        return TT_EOF_TOKEN;
     }
     if (keyword_lookup(currentToken,NULL)) {
-        return KEYWORD;
+        return TT_KEYWORD;
     }
     if (isSymbol(*self->buffer,len)) {
-        return SYMBOL;
+        return TT_SYMBOL;
     }
     if (isIntConst(currentToken,len)) {
-        return INT_CONST;
+        return TT_INT_CONST;
     }
     if (isStringConst(currentToken,len)) {
-        return STRING_CONST;
+        return TT_STRING_CONST;
     }
     if (isIdentifier(currentToken,len)) {
-        return IDENTIFIER;
+        return TT_IDENTIFIER;
     }
     self->isError = 1;
     strcpy(self->error,"Unknown token");
-    return UNKNOWN_TOKEN;
+    return TT_UNKNOWN_TOKEN;
 }
 //Helper functions for tokenType
 int isSymbol(const char token, const int len) {

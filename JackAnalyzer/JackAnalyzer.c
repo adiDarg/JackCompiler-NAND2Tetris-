@@ -33,7 +33,7 @@ void operateOnFile(char path[],char destination[]) {
             source_code[read] = '\0';
             JackTokenizer *jack_tokenizer = JT_Constructor(source_code);
             VMWriter *writer = vm_constructor(path,100);
-            CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer, writer);
+            CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer);
             const int success = CompileClass(compilation_engine);
             printf(success? "Success!\n": "Fail!\n");
             printf(!success? compilation_engine->error: "");

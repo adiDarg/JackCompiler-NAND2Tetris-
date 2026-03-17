@@ -45,7 +45,7 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
-    if (tokenType(tokenizer) != KEYWORD || keyword(tokenizer) != kw) {
+    if (tokenType(tokenizer) != TT_KEYWORD || keyword(tokenizer) != kw) {
         sprintf(self->error,"line %d: Expected %s",self->jack_tokenizer->line,keyword_to_text(kw));
         return 0;
     }
@@ -60,7 +60,7 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
 }
 int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
-    if (tokenType(tokenizer) != KEYWORD) {
+    if (tokenType(tokenizer) != TT_KEYWORD) {
         snprintf(self->error,100,"line %d: Expected Keyword: %s",
             self->jack_tokenizer->line, keywords_to_text(arr,len));
         return 0;
@@ -88,7 +88,7 @@ int compileIdentifier(CompilationEngine* self) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
-    if (tokenType(self->jack_tokenizer) != IDENTIFIER) {
+    if (tokenType(self->jack_tokenizer) != TT_IDENTIFIER) {
         sprintf(self->error,"line %d: Expected Identifier",self->jack_tokenizer->line);
         return 0;
     }
@@ -107,7 +107,7 @@ int compileSymbol(CompilationEngine* self, char sym) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
-    if (tokenType(tokenizer) != SYMBOL || symbol(tokenizer) != sym) {
+    if (tokenType(tokenizer) != TT_SYMBOL || symbol(tokenizer) != sym) {
         sprintf(self->error,"line %d: Expected %c",self->jack_tokenizer->line,sym);
         return 0;
     }
@@ -145,7 +145,7 @@ int compileSymbols(CompilationEngine* self, const char* arr,const int len){
         strcpy(self->error,tokenizer->error);
         return 0;
     }
-    if (tokenType(tokenizer) != SYMBOL) {
+    if (tokenType(tokenizer) != TT_SYMBOL) {
         strcpy(self->error,"Expected symbol: ");
         for (int i = 0; i < len; i++) {
             char char_as_string[2];
@@ -177,7 +177,7 @@ int compileIntConstant(CompilationEngine* self) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
-    if (tokenType(self->jack_tokenizer) != INT_CONST) {
+    if (tokenType(self->jack_tokenizer) != TT_INT_CONST) {
         sprintf(self->error,"Expected int constant");
         return 0;
     }
@@ -197,7 +197,7 @@ int compileStringConstant(CompilationEngine* self) {
         strcpy(self->error,self->jack_tokenizer->error);
         return 0;
     }
-    if (tokenType(self->jack_tokenizer) != STRING_CONST) {
+    if (tokenType(self->jack_tokenizer) != TT_STRING_CONST) {
         sprintf(self->error,"Expected string constant");
         return 0;
     }
@@ -216,15 +216,15 @@ int compileType(CompilationEngine* self) {
         strcpy(self->error,tokenizer->error);
         return 0;
     }
-    const int primitive = tokenType(tokenizer) == KEYWORD &&
-        ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN));
-    const int className = tokenType(tokenizer) == IDENTIFIER;
+    const int primitive = tokenType(tokenizer) == TT_KEYWORD &&
+        ((keyword(tokenizer) == KW_INT) || (keyword(tokenizer) == KW_CHAR) || (keyword(tokenizer) == KW_BOOLEAN));
+    const int className = tokenType(tokenizer) == TT_IDENTIFIER;
     if (!primitive && !className){
         sprintf(self->error,"line %d: Expected a type",self->jack_tokenizer->line);
         return 0;
     }
     if (primitive) {
-        const Keyword arr[] = {INT,CHAR,BOOLEAN};
+        const Keyword arr[] = {KW_INT,KW_CHAR,KW_BOOLEAN};
         compileKeywords(self,arr,3);
     }
     else {
@@ -242,13 +242,13 @@ int compileUnaryOperator(CompilationEngine* self) {
 }
 int isTerm(const CompilationEngine* self) {
     const JackTokenizer* tokenizer = self->jack_tokenizer;
-    const int constant = tokenType(tokenizer) == INT_CONST || tokenType(tokenizer) == STRING_CONST;
+    const int constant = tokenType(tokenizer) == TT_INT_CONST || tokenType(tokenizer) == TT_STRING_CONST;
     const Keyword kw = keyword(tokenizer);
-    const int keywordConstant = tokenType(tokenizer) == KEYWORD &&
-        (kw == TRUE || kw == FALSE || kw == KW_NULL || kw==KW_THIS);
-    const int identifier = tokenType(tokenizer) == IDENTIFIER;
+    const int keywordConstant = tokenType(tokenizer) == TT_KEYWORD &&
+        (kw == KW_TRUE || kw == KW_FALSE || kw == KW_NULL || kw==KW_THIS);
+    const int identifier = tokenType(tokenizer) == TT_IDENTIFIER;
     const char symb = symbol(tokenizer);
-    const int symbols = tokenType(tokenizer) == SYMBOL &&
+    const int symbols = tokenType(tokenizer) == TT_SYMBOL &&
         (symb == '(' || symb=='-' || symb=='~');
     return constant || keywordConstant || identifier || symbols;
 }
@@ -259,7 +259,7 @@ int CompileClass(CompilationEngine *self) {
     advance(tokenizer);
     strcpy(tokenizer->error,"\0");
     tokenizer->isError = 0;
-    if (!compileKeyword(self,CLASS)) {
+    if (!compileKeyword(self,KW_CLASS)) {
         return 0;
     }
     if (!compileIdentifier(self)) {
@@ -268,14 +268,14 @@ int CompileClass(CompilationEngine *self) {
     if (!compileSymbol(self,'{')) {
         return 0;
     }
-    while (tokenType(tokenizer) == KEYWORD &&
+    while (tokenType(tokenizer) == TT_KEYWORD &&
         (keyword(tokenizer) == KW_STATIC || keyword(tokenizer) == KW_FIELD)) {
         if (!CompileClassVarDec(self)) {
             return 0;
         }
     }
-    while (tokenType(tokenizer) == KEYWORD &&
-    keyword(tokenizer) == CONSTRUCTOR || keyword(tokenizer) == FUNCTION || keyword(tokenizer) == METHOD) {
+    while (tokenType(tokenizer) == TT_KEYWORD &&
+    keyword(tokenizer) == KW_CONSTRUCTOR || keyword(tokenizer) == KW_FUNCTION || keyword(tokenizer) == KW_METHOD) {
         if (!CompileSubroutineDec(self)) {
             return 0;
         }
@@ -317,7 +317,7 @@ int CompileSubroutineBody(CompilationEngine* self) {
     if (!compileSymbol(self,'{')) {
         return 0;
     }
-    while (tokenType(tokenizer) == KEYWORD && keyword(tokenizer) == KW_VAR) {
+    while (tokenType(tokenizer) == TT_KEYWORD && keyword(tokenizer) == KW_VAR) {
         if (!CompileVarDec(self)) {
             return 0;
         }
@@ -335,11 +335,11 @@ int CompileSubroutineBody(CompilationEngine* self) {
 int CompileSubroutineDec(CompilationEngine* self) {
     writeOut(self,"<subroutineDec>\n");
     self->tab++;
-    const Keyword arr[] = {CONSTRUCTOR,FUNCTION,METHOD};
+    const Keyword arr[] = {KW_CONSTRUCTOR,KW_FUNCTION,KW_METHOD};
     if (!compileKeywords(self,arr,3)) {
         return 0;
     }
-    if (!compileKeyword(self,VOID)) {
+    if (!compileKeyword(self,KW_VOID)) {
         if (!compileType(self)) {
             sprintf(self->error,"line %d: Expected a type (or void)",self->jack_tokenizer->line);
             return 0;
@@ -369,10 +369,10 @@ int CompileParameterList(CompilationEngine* self) {
     self->tab++;
     JackTokenizer* tokenizer = self->jack_tokenizer;
     while (
-        tokenType(tokenizer) == KEYWORD &&
-        ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN))
+        tokenType(tokenizer) == TT_KEYWORD &&
+        ((keyword(tokenizer) == KW_INT) || (keyword(tokenizer) == KW_CHAR) || (keyword(tokenizer) == KW_BOOLEAN))
         ||
-        tokenType(tokenizer) == IDENTIFIER
+        tokenType(tokenizer) == TT_IDENTIFIER
         ) {
         if (!compileType(self)) {
             return 0;
@@ -417,29 +417,29 @@ int CompileStatements(CompilationEngine* self) {
     self->tab++;
 
     int finish = 0;
-    while (tokenType(self->jack_tokenizer) == KEYWORD && !finish) {
+    while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
         switch (keyword(self->jack_tokenizer)) {
-            case LET:
+            case KW_LET:
                 if (!CompileLet(self)) {
                     return 0;
                 }
                 break;
-            case IF:
+            case KW_IF:
                 if (!CompileIf(self)) {
                     return 0;
                 }
                 break;
-            case WHILE:
+            case KW_WHILE:
                 if (!CompileWhile(self)) {
                     return 0;
                 }
                 break;
-            case DO:
+            case KW_DO:
                 if (!CompileDo(self)) {
                     return 0;
                 }
                 break;
-            case RETURN:
+            case KW_RETURN:
                 if (!CompileReturn(self)) {
                     return 0;
                 }
@@ -457,7 +457,7 @@ int CompileStatements(CompilationEngine* self) {
 int CompileLet(CompilationEngine* self) {
     writeOut(self,"<letStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,LET)) {
+    if (!compileKeyword(self,KW_LET)) {
         return 0;
     }
     if (!compileIdentifier(self)) {
@@ -490,7 +490,7 @@ int CompileLet(CompilationEngine* self) {
 int CompileIf(CompilationEngine* self) {
     writeOut(self,"<ifStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,IF)) {
+    if (!compileKeyword(self,KW_IF)) {
         return 0;
     }
     if (!compileSymbol(self,'(')) {
@@ -511,7 +511,7 @@ int CompileIf(CompilationEngine* self) {
     if (!compileSymbol(self,'}')) {
         return 0;
     }
-    if (compileKeyword(self,ELSE)) {
+    if (compileKeyword(self,KW_ELSE)) {
         if (!compileSymbol(self,'{')) {
             return 0;
         }
@@ -529,7 +529,7 @@ int CompileIf(CompilationEngine* self) {
 int CompileWhile(CompilationEngine* self) {
     writeOut(self,"<whileStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,WHILE)) {
+    if (!compileKeyword(self,KW_WHILE)) {
         return 0;
     }
     if (!compileSymbol(self,'(')) {
@@ -557,7 +557,7 @@ int CompileWhile(CompilationEngine* self) {
 int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,DO)) {
+    if (!compileKeyword(self,KW_DO)) {
         return 0;
     }
     if (!CompileSubroutineCall(self)) {
@@ -573,7 +573,7 @@ int CompileDo(CompilationEngine* self) {
 int CompileReturn(CompilationEngine* self) {
     writeOut(self,"<returnStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,RETURN)) {
+    if (!compileKeyword(self,KW_RETURN)) {
         return 0;
     }
     if (isTerm(self)) {
@@ -637,7 +637,7 @@ int CompileTerm(CompilationEngine* self) {
         writeOut(self,"</term>\n");
         return 1;
     }
-    const Keyword kws[] = {TRUE,FALSE,KW_NULL,KW_THIS};
+    const Keyword kws[] = {KW_TRUE,KW_FALSE,KW_NULL,KW_THIS};
     if (compileKeywords(self,kws,4)) {
         self->tab--;
         writeOut(self,"</term>\n");

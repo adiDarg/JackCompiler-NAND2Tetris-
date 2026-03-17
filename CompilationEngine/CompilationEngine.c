@@ -4,82 +4,21 @@
 
 #include "CompilationEngine.h"
 #include "../JackTokenizer/jackTokenizer.h"
-#include "../VMWriter/VMWriter.h"
 #include "../Keyword/keyword.h"
 
 #include <stdlib.h>
 #include <string.h>
-#define DEFINESYMBOL() define(self->symbol_table,st_info->name,sizeof(st_info->name),st_info->type,sizeof(st_info->type),st_info->kind);
 
-CompilationEngine* Construct_Engine(JackTokenizer *jack_tokenizer, VMWriter *vm_writer) {
+CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
     CompilationEngine* self = malloc(sizeof(CompilationEngine));
     self->jack_tokenizer = jack_tokenizer;
-    self->vm_writer = vm_writer;
-    self->symbol_table = constructor(100);
     self->out = malloc(8192);
     self->out[0] = '\0';
     self->tab=0;
     self->cap=8192;
     self->len = 0;
     self->error[0] = '\0';
-    self->stInfo = malloc(sizeof(SymbolTableInfo));
-    self->stInfo->nameLength = 100;
-    self->stInfo->typeLength = 100;
-    self->stInfo->name = malloc(self->stInfo->nameLength + 1);
-    self->stInfo->type = malloc(self->stInfo->typeLength + 1);
     return self;
-}
-void calcSymbolKind(const CompilationEngine *self) {
-    if (tokenType(self->jack_tokenizer) != KEYWORD) {
-        return;
-    }
-    switch (keyword(self->jack_tokenizer)) {
-        case KW_STATIC: {
-            self->stInfo->kind = SK_STATIC;
-            break;
-        }
-        case KW_FIELD: {
-            self->stInfo->kind = SK_FIELD;
-            break;
-        }
-        case KW_VAR: {
-            self->stInfo->kind = SK_VAR;
-            break;
-        }
-        default: {
-            break;
-        }
-    }
-}
-void calcSymbolType(const CompilationEngine *self) {
-    JackTokenizer *tokenizer = self->jack_tokenizer;
-    if (tokenType(tokenizer) == IDENTIFIER) {
-        strncpy(self->stInfo->type,tokenizer->buffer,self->stInfo->typeLength);
-        return;
-    }
-    if (tokenType(tokenizer) != KEYWORD) {
-        return;
-    }
-    switch (keyword(tokenizer)) {
-        case KW_INT: {
-            strncpy(self->stInfo->type,"int",self->stInfo->typeLength);
-            break;
-        }
-        case KW_CHAR: {
-            strncpy(self->stInfo->type,"char",self->stInfo->typeLength);
-        }
-        case KW_BOOLEAN: {
-            strncpy(self->stInfo->type,"boolean",self->stInfo->typeLength);
-        }
-        default:
-            break;
-    }
-}
-void calcSymbolName(const CompilationEngine* self) {
-    JackTokenizer *j_tokenizer = self->jack_tokenizer;
-    if (tokenType(j_tokenizer) == IDENTIFIER) {
-        strncpy(self->stInfo->name,j_tokenizer->buffer,self->stInfo->nameLength);
-    }
 }
 void writeOut(CompilationEngine* self,const char str[]) {
     const size_t n = strlen(str);
@@ -129,7 +68,6 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     const Keyword kw = keyword(tokenizer);
     for (int i = 0; i < len; i++) {
         if (kw == arr[i]) {
-
             writeOut(self,"<keyword> ");
             const int temp = self->tab;
             self->tab = 0;
@@ -279,14 +217,14 @@ int compileType(CompilationEngine* self) {
         return 0;
     }
     const int primitive = tokenType(tokenizer) == KEYWORD &&
-        ((keyword(tokenizer) == KW_INT) || (keyword(tokenizer) == KW_CHAR) || (keyword(tokenizer) == KW_BOOLEAN));
+        ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN));
     const int className = tokenType(tokenizer) == IDENTIFIER;
     if (!primitive && !className){
         sprintf(self->error,"line %d: Expected a type",self->jack_tokenizer->line);
         return 0;
     }
     if (primitive) {
-        const Keyword arr[] = {KW_INT,KW_CHAR,KW_BOOLEAN};
+        const Keyword arr[] = {INT,CHAR,BOOLEAN};
         compileKeywords(self,arr,3);
     }
     else {
@@ -303,11 +241,11 @@ int compileUnaryOperator(CompilationEngine* self) {
     return compileSymbols(self,symbols,2);
 }
 int isTerm(const CompilationEngine* self) {
-    JackTokenizer* tokenizer = self->jack_tokenizer;
+    const JackTokenizer* tokenizer = self->jack_tokenizer;
     const int constant = tokenType(tokenizer) == INT_CONST || tokenType(tokenizer) == STRING_CONST;
     const Keyword kw = keyword(tokenizer);
     const int keywordConstant = tokenType(tokenizer) == KEYWORD &&
-        (kw == KW_TRUE || kw == KW_FALSE || kw == KW_NULL || kw==KW_THIS);
+        (kw == TRUE || kw == FALSE || kw == KW_NULL || kw==THIS);
     const int identifier = tokenType(tokenizer) == IDENTIFIER;
     const char symb = symbol(tokenizer);
     const int symbols = tokenType(tokenizer) == SYMBOL &&
@@ -321,7 +259,7 @@ int CompileClass(CompilationEngine *self) {
     advance(tokenizer);
     strcpy(tokenizer->error,"\0");
     tokenizer->isError = 0;
-    if (!compileKeyword(self,KW_CLASS)) {
+    if (!compileKeyword(self,CLASS)) {
         return 0;
     }
     if (!compileIdentifier(self)) {
@@ -331,13 +269,13 @@ int CompileClass(CompilationEngine *self) {
         return 0;
     }
     while (tokenType(tokenizer) == KEYWORD &&
-        (keyword(tokenizer) == KW_STATIC || keyword(tokenizer) == KW_FIELD)) {
+        (keyword(tokenizer) == STATIC || keyword(tokenizer) == FIELD)) {
         if (!CompileClassVarDec(self)) {
             return 0;
         }
     }
     while (tokenType(tokenizer) == KEYWORD &&
-    keyword(tokenizer) == KW_CONSTRUCTOR || keyword(tokenizer) == KW_FUNCTION || keyword(tokenizer) == KW_METHOD) {
+    keyword(tokenizer) == CONSTRUCTOR || keyword(tokenizer) == FUNCTION || keyword(tokenizer) == METHOD) {
         if (!CompileSubroutineDec(self)) {
             return 0;
         }
@@ -350,29 +288,22 @@ int CompileClass(CompilationEngine *self) {
     return 1;
 }
 int CompileClassVarDec(CompilationEngine* self) {
-    SymbolTableInfo *st_info = self->stInfo;
     writeOut(self,"<classVarDec>\n");
     self->tab++;
-    const Keyword arr[] = {KW_STATIC,KW_FIELD};
-    calcSymbolKind(self);
+    const Keyword arr[] = {STATIC,FIELD};
     if (!compileKeywords(self, arr, 2)) {
         return 0;
     }
-    calcSymbolType(self);
     if (!compileType(self)) {
         return 0;
     };
-    calcSymbolName(self);
     if (!compileIdentifier(self)) {
         return 0;
     }
-    DEFINESYMBOL();
     while (compileSymbol(self,',')) {
-        calcSymbolName(self);
         if (!compileIdentifier(self)) {
             return 0;
         }
-        DEFINESYMBOL();
     }
     compileSymbol(self,';');
     self->tab--;
@@ -380,14 +311,13 @@ int CompileClassVarDec(CompilationEngine* self) {
     return 1;
 }
 int CompileSubroutineBody(CompilationEngine* self) {
-    startSubroutine(self->symbol_table);
     writeOut(self,"<subroutineBody>\n");
     self->tab++;
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (!compileSymbol(self,'{')) {
         return 0;
     }
-    while (tokenType(tokenizer) == KEYWORD && keyword(tokenizer) == KW_VAR) {
+    while (tokenType(tokenizer) == KEYWORD && keyword(tokenizer) == VAR) {
         if (!CompileVarDec(self)) {
             return 0;
         }
@@ -405,11 +335,11 @@ int CompileSubroutineBody(CompilationEngine* self) {
 int CompileSubroutineDec(CompilationEngine* self) {
     writeOut(self,"<subroutineDec>\n");
     self->tab++;
-    const Keyword arr[] = {KW_CONSTRUCTOR,KW_FUNCTION,KW_METHOD};
+    const Keyword arr[] = {CONSTRUCTOR,FUNCTION,METHOD};
     if (!compileKeywords(self,arr,3)) {
         return 0;
     }
-    if (!compileKeyword(self,KW_VOID)) {
+    if (!compileKeyword(self,VOID)) {
         if (!compileType(self)) {
             sprintf(self->error,"line %d: Expected a type (or void)",self->jack_tokenizer->line);
             return 0;
@@ -436,25 +366,20 @@ int CompileSubroutineDec(CompilationEngine* self) {
 }
 int CompileParameterList(CompilationEngine* self) {
     writeOut(self,"<parameterList>\n");
-    SymbolTableInfo *st_info = self->stInfo;
-    st_info->kind = SK_ARG;
     self->tab++;
     JackTokenizer* tokenizer = self->jack_tokenizer;
     while (
         tokenType(tokenizer) == KEYWORD &&
-        ((keyword(tokenizer) == KW_INT) || (keyword(tokenizer) == KW_CHAR) || (keyword(tokenizer) == KW_BOOLEAN))
+        ((keyword(tokenizer) == INT) || (keyword(tokenizer) == CHAR) || (keyword(tokenizer) == BOOLEAN))
         ||
         tokenType(tokenizer) == IDENTIFIER
         ) {
-        calcSymbolType(self);
         if (!compileType(self)) {
             return 0;
         }
-        calcSymbolName(self);
         if (!compileIdentifier(self)) {
             return 0;
         }
-        DEFINESYMBOL();
         if (!compileSymbol(self,',')) {
             break;
         };
@@ -464,28 +389,21 @@ int CompileParameterList(CompilationEngine* self) {
     return 1;
 }
 int CompileVarDec(CompilationEngine* self) {
-    SymbolTableInfo *st_info = self->stInfo;
-    st_info->kind = SK_VAR;
     writeOut(self,"<varDec>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_VAR)) {
+    if (!compileKeyword(self,VAR)) {
         return 0;
     }
-    calcSymbolType(self);
     if (!compileType(self)) {
         return 0;
     }
-    calcSymbolName(self);
     if (!compileIdentifier(self)) {
         return 0;
     }
-    DEFINESYMBOL();
     while (compileSymbol(self,',')) {
-        calcSymbolName(self);
         if (!compileIdentifier(self)) {
             return 0;
         }
-        DEFINESYMBOL();
     }
     if (!compileSymbol(self,';')) {
         return 0;
@@ -501,27 +419,27 @@ int CompileStatements(CompilationEngine* self) {
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == KEYWORD && !finish) {
         switch (keyword(self->jack_tokenizer)) {
-            case KW_LET:
+            case LET:
                 if (!CompileLet(self)) {
                     return 0;
                 }
                 break;
-            case KW_IF:
+            case IF:
                 if (!CompileIf(self)) {
                     return 0;
                 }
                 break;
-            case KW_WHILE:
+            case WHILE:
                 if (!CompileWhile(self)) {
                     return 0;
                 }
                 break;
-            case KW_DO:
+            case DO:
                 if (!CompileDo(self)) {
                     return 0;
                 }
                 break;
-            case KW_RETURN:
+            case RETURN:
                 if (!CompileReturn(self)) {
                     return 0;
                 }
@@ -539,7 +457,7 @@ int CompileStatements(CompilationEngine* self) {
 int CompileLet(CompilationEngine* self) {
     writeOut(self,"<letStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_LET)) {
+    if (!compileKeyword(self,LET)) {
         return 0;
     }
     if (!compileIdentifier(self)) {
@@ -572,7 +490,7 @@ int CompileLet(CompilationEngine* self) {
 int CompileIf(CompilationEngine* self) {
     writeOut(self,"<ifStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_IF)) {
+    if (!compileKeyword(self,IF)) {
         return 0;
     }
     if (!compileSymbol(self,'(')) {
@@ -593,7 +511,7 @@ int CompileIf(CompilationEngine* self) {
     if (!compileSymbol(self,'}')) {
         return 0;
     }
-    if (compileKeyword(self,KW_ELSE)) {
+    if (compileKeyword(self,ELSE)) {
         if (!compileSymbol(self,'{')) {
             return 0;
         }
@@ -611,7 +529,7 @@ int CompileIf(CompilationEngine* self) {
 int CompileWhile(CompilationEngine* self) {
     writeOut(self,"<whileStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_WHILE)) {
+    if (!compileKeyword(self,WHILE)) {
         return 0;
     }
     if (!compileSymbol(self,'(')) {
@@ -639,7 +557,7 @@ int CompileWhile(CompilationEngine* self) {
 int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_DO)) {
+    if (!compileKeyword(self,DO)) {
         return 0;
     }
     if (!CompileSubroutineCall(self)) {
@@ -655,7 +573,7 @@ int CompileDo(CompilationEngine* self) {
 int CompileReturn(CompilationEngine* self) {
     writeOut(self,"<returnStatement>\n");
     self->tab++;
-    if (!compileKeyword(self,KW_RETURN)) {
+    if (!compileKeyword(self,RETURN)) {
         return 0;
     }
     if (isTerm(self)) {
@@ -696,7 +614,7 @@ void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* 
             new_size *= 2;
         }
         char* tmp = realloc(*errors, new_size);
-        if (tmp == NULL) {
+        if (!tmp) {
             printf("Allocation fail on writeAndRealloc");
             return;
         }
@@ -719,7 +637,7 @@ int CompileTerm(CompilationEngine* self) {
         writeOut(self,"</term>\n");
         return 1;
     }
-    const Keyword kws[] = {KW_TRUE,KW_FALSE,KW_NULL,KW_THIS};
+    const Keyword kws[] = {TRUE,FALSE,KW_NULL,THIS};
     if (compileKeywords(self,kws,4)) {
         self->tab--;
         writeOut(self,"</term>\n");

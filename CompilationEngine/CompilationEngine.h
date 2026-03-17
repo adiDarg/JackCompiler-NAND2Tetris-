@@ -5,29 +5,16 @@
 #ifndef COMPILATIONENGINE_H
 #define COMPILATIONENGINE_H
 #include "../JackTokenizer/jackTokenizer.h"
-#include "../VMWriter/VMWriter.h"
-#include "../SymbolTable/SymbolTable.h"
 #include <stdio.h>
 typedef struct {
-    SymbolKind kind;
-    int nameLength;
-    int typeLength;
-    char *name;
-    char *type;
-
-} SymbolTableInfo;
-typedef struct {
-    JackTokenizer *jack_tokenizer;
-    VMWriter *vm_writer;
-    SymbolTable *symbol_table;
+    JackTokenizer* jack_tokenizer;
     char *out;
     size_t len;
     size_t cap;
     char error[100];
     int tab;
-    SymbolTableInfo *stInfo;
 }CompilationEngine;
-CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer, VMWriter *vm_writer);
+CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer);
 int CompileClass(CompilationEngine *self);
 int CompileClassVarDec(CompilationEngine *self);
 int CompileSubroutineDec(CompilationEngine *self);

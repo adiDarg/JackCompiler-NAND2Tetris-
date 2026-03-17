@@ -245,7 +245,7 @@ int isTerm(const CompilationEngine* self) {
     const int constant = tokenType(tokenizer) == INT_CONST || tokenType(tokenizer) == STRING_CONST;
     const Keyword kw = keyword(tokenizer);
     const int keywordConstant = tokenType(tokenizer) == KEYWORD &&
-        (kw == TRUE || kw == FALSE || kw == KW_NULL || kw==THIS);
+        (kw == TRUE || kw == FALSE || kw == KW_NULL || kw==KW_THIS);
     const int identifier = tokenType(tokenizer) == IDENTIFIER;
     const char symb = symbol(tokenizer);
     const int symbols = tokenType(tokenizer) == SYMBOL &&
@@ -269,7 +269,7 @@ int CompileClass(CompilationEngine *self) {
         return 0;
     }
     while (tokenType(tokenizer) == KEYWORD &&
-        (keyword(tokenizer) == STATIC || keyword(tokenizer) == FIELD)) {
+        (keyword(tokenizer) == KW_STATIC || keyword(tokenizer) == KW_FIELD)) {
         if (!CompileClassVarDec(self)) {
             return 0;
         }
@@ -290,7 +290,7 @@ int CompileClass(CompilationEngine *self) {
 int CompileClassVarDec(CompilationEngine* self) {
     writeOut(self,"<classVarDec>\n");
     self->tab++;
-    const Keyword arr[] = {STATIC,FIELD};
+    const Keyword arr[] = {KW_STATIC,KW_FIELD};
     if (!compileKeywords(self, arr, 2)) {
         return 0;
     }
@@ -317,7 +317,7 @@ int CompileSubroutineBody(CompilationEngine* self) {
     if (!compileSymbol(self,'{')) {
         return 0;
     }
-    while (tokenType(tokenizer) == KEYWORD && keyword(tokenizer) == VAR) {
+    while (tokenType(tokenizer) == KEYWORD && keyword(tokenizer) == KW_VAR) {
         if (!CompileVarDec(self)) {
             return 0;
         }
@@ -391,7 +391,7 @@ int CompileParameterList(CompilationEngine* self) {
 int CompileVarDec(CompilationEngine* self) {
     writeOut(self,"<varDec>\n");
     self->tab++;
-    if (!compileKeyword(self,VAR)) {
+    if (!compileKeyword(self,KW_VAR)) {
         return 0;
     }
     if (!compileType(self)) {
@@ -637,7 +637,7 @@ int CompileTerm(CompilationEngine* self) {
         writeOut(self,"</term>\n");
         return 1;
     }
-    const Keyword kws[] = {TRUE,FALSE,KW_NULL,THIS};
+    const Keyword kws[] = {TRUE,FALSE,KW_NULL,KW_THIS};
     if (compileKeywords(self,kws,4)) {
         self->tab--;
         writeOut(self,"</term>\n");

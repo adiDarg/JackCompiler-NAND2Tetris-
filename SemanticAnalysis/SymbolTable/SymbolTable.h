@@ -32,7 +32,7 @@ struct SymbolTable {
     int varIndex;
 } typedef SymbolTable;
 
-SymbolTable* constructor();
+SymbolTable* symbol_table_constructor(const int tableSize);
 void startSubroutine(const SymbolTable *self);
 void define(SymbolTable* self,char name[],const int nameLength, char type[],const int typeLength, SymbolKind kind);
 int varCount(const SymbolTable* self, SymbolKind kind);

@@ -23,7 +23,8 @@ unsigned int hash(const char s[], const int length) {
     return val;
 }
 
-void defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name, const int nameLength, const char *type, const int typeLength) {
+void defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name, const int nameLength,
+    const char *type, const int typeLength) {
     Routine *routine = malloc(sizeof(Routine));
     routine->kind = kind;
     routine->name = malloc(nameLength);

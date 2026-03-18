@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-SymbolTable* constructor(const int tableSize) {
+SymbolTable* symbol_table_constructor(const int tableSize) {
     SymbolTable *table = malloc(sizeof(SymbolTable));
     table->size = tableSize;
     table->classScope = malloc(tableSize * sizeof(SymbolList*));

@@ -6,8 +6,8 @@ set(CMAKE_C_STANDARD 11)
 add_executable(JackCompiler main.c
         JackAnalyzer/JackAnalyzer.c
         JackTokenizer/JackTokenizer.c
-        Keyword/KeyWord.c
-        Keyword/keyword.h
+        JackTokenizer/Keyword/KeyWord.c
+        JackTokenizer/Keyword/keyword.h
         JackTokenizer/jackTokenizer.h
         CompilationEngine/CompilationEngine.c
         CompilationEngine/CompilationEngine.h
@@ -16,8 +16,8 @@ add_executable(JackCompiler main.c
         SymbolTable/SymbolTable.h
         VMWriter/VMWriter.c
         VMWriter/VMWriter.h
-        CompilationEngine/Token.h
+        CompilationEngine/Token/Token.h
         CompilationEngine/DataType.h
-        CompilationEngine/Token.c
-        CompilationEngine/AbstractSyntaxTree.c
-        CompilationEngine/AbstractSyntaxTree.h)
+        CompilationEngine/Token/Token.c
+        CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c
+        CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.h)

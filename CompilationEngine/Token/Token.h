@@ -4,8 +4,8 @@
 
 #ifndef TOKEN_H
 #define TOKEN_H
-#include "../Keyword/keyword.h"
-#include "../JackTokenizer/jackTokenizer.h"
+#include "../../JackTokenizer/Keyword/keyword.h"
+#include "../../JackTokenizer/jackTokenizer.h"
 typedef union TokenInfo {
     Keyword keyword;
     char symbol;

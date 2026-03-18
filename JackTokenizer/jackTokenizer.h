@@ -4,7 +4,7 @@
 
 #ifndef JACKTOKENIZER_H
 #define JACKTOKENIZER_H
-#include "../Keyword/keyword.h"
+#include "Keyword/keyword.h"
 
 typedef enum {
     TT_KEYWORD,

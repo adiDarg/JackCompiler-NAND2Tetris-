@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../Keyword/keyword.h"
+#include "Keyword/keyword.h"
 #include "jackTokenizer.h"
 //
 // Created by Owner on 17/12/2025.
@@ -36,7 +36,7 @@ void skipWhitespace(JackTokenizer *self) {
     }
 }
 void skipComments(JackTokenizer *self) {
-    if (!self || !self->cursor) {
+    if (self == NULL || self->cursor == NULL) {
         return;
     }
     while (self->cursor[0] == '/' && (self->cursor[1] == '/' || self->cursor[1] == '*')) {

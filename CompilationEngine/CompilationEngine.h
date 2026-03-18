@@ -5,8 +5,7 @@
 #ifndef COMPILATIONENGINE_H
 #define COMPILATIONENGINE_H
 #include "../JackTokenizer/jackTokenizer.h"
-#include <stdio.h>
-#include "AbstractSyntaxTree.h"
+#include "AbstractSyntaxTree/AbstractSyntaxTree.h"
 typedef struct {
     JackTokenizer* jack_tokenizer;
     char *out;

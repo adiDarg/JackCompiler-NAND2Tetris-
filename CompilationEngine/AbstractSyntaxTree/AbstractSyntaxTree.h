@@ -3,9 +3,10 @@
 //
 #ifndef ABSTRACTSYNTAXTREE_H
 #define ABSTRACTSYNTAXTREE_H
-#include "Token.h"
-#include "DataType.h"
-#include "../SymbolTable/SymbolTable.h"
+#include "../Token/Token.h"
+#include "../DataType.h"
+#include "../../SymbolTable/SymbolTable.h"
+#include "../../JackTokenizer/jackTokenizer.h"
 #include <stdlib.h>
 
 typedef enum ASTnodeType {

@@ -3,8 +3,11 @@
 //
 
 #include "CompilationEngine.h"
+
+#include <stdio.h>
+
 #include "../JackTokenizer/jackTokenizer.h"
-#include "../Keyword/keyword.h"
+#include "../JackTokenizer/Keyword/keyword.h"
 
 #include <stdlib.h>
 #include <string.h>

@@ -18,7 +18,7 @@ struct SymbolValue {
     char *type;
 } typedef Symbol;
 struct SymbolList {
-    Symbol symbol;
+    Symbol *symbol;
     struct SymbolList* next;
 }typedef SymbolList;
 
@@ -34,7 +34,7 @@ struct SymbolTable {
 
 SymbolTable* symbol_table_constructor(const int tableSize);
 void startSubroutine(const SymbolTable *self);
-void define(SymbolTable* self,char name[],const int nameLength, char type[],const int typeLength, SymbolKind kind);
+char define(SymbolTable* self,char name[],const int nameLength, char type[],const int typeLength, SymbolKind kind);
 int varCount(const SymbolTable* self, SymbolKind kind);
 SymbolKind kindOf(const SymbolTable* self,const char name[], const int length);
 char* typeOf(const SymbolTable* self,const char name[], const int length);

@@ -8,6 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "../HashingFunctions/HashingFunctions.h"
+
 SymbolTable* symbol_table_constructor(const int tableSize) {
     SymbolTable *table = malloc(sizeof(SymbolTable));
     table->size = tableSize;
@@ -35,63 +37,58 @@ void startSubroutine(const SymbolTable *self) {
         self->subroutineScope[i] = NULL;
     }
 }
-unsigned int hash(const char s[], const int length) {
-    //FNV-1a
-    unsigned int val = 2166136261u;
-    for (int i = 0; i < length; i++) {
-        val ^= (unsigned char) s[i];
-        val *= 16777619u;
-    }
-    return val;
-}
-void addSymbolToTable(const SymbolTable *self,const SymbolKind kind, const int hashVal,const Symbol symbol) {
+char addSymbolToTable(const SymbolTable *self,const SymbolKind kind, const int hashVal,Symbol *symbol) {
     //Init listPtr with correct scope
     SymbolList** listPtr = &getScope(self,kind)[hashVal];
     //when *listPtr == NULL, listPtr points to pointer to empty bucket / pointer to empty next
     while (*listPtr != NULL) {
+        if (strcmp((*listPtr)->symbol->name,symbol->name) == 0) {
+            return 0;
+        }
         listPtr = &(*listPtr)->next;
     }
     *listPtr = malloc(sizeof(SymbolList));
     (*listPtr)->symbol = symbol;
     (*listPtr)->next = NULL;
+    return 1;
 }
-void define(SymbolTable* self, char name[],const int nameLength, char type[],const int typeLength, const SymbolKind kind) {
+char define(SymbolTable* self, char name[],const int nameLength, char type[],const int typeLength, const SymbolKind kind) {
     //Initialize symbol for symbol table - saves info of identifier
-    Symbol symbol;
-    symbol.kind = kind;
-    symbol.name = malloc(nameLength);
-    symbol.type = malloc(typeLength);
-    strcpy(symbol.name,name);
-    strcpy(symbol.type,type);
+    Symbol *symbol = malloc(sizeof(Symbol));
+    symbol->kind = kind;
+    symbol->name = malloc(nameLength);
+    symbol->type = malloc(typeLength);
+    strcpy(symbol->name,name);
+    strcpy(symbol->type,type);
     switch (kind) {
         case SK_FIELD: {
-            symbol.index = self->fieldIndex;
+            symbol->index = self->fieldIndex;
             self->fieldIndex++;
             break;
         }
         case SK_STATIC: {
-            symbol.index = self->staticIndex;
+            symbol->index = self->staticIndex;
             self->staticIndex++;
             break;
         }
         case SK_ARG: {
-            symbol.index = self->argIndex;
+            symbol->index = self->argIndex;
             self->argIndex++;
             break;
         }
         case SK_VAR: {
-            symbol.index = self->varIndex;
+            symbol->index = self->varIndex;
             self->varIndex++;
             break;
         }
         default:
-            symbol.index = 0;
+            symbol->index = 0;
             break;
     }
     //Get hash value for symbol based on name
-    const int hashVal = hash(name,nameLength) % self->size;
+    const int hashVal = fnv1a_hash(name,nameLength) % self->size;
     //Assign memory based on scope in hashtable + linkedlist structure
-    addSymbolToTable(self,kind,hashVal,symbol);
+    return addSymbolToTable(self,kind,hashVal,symbol);
 }
 int varCount(const SymbolTable *self,const SymbolKind kind) {
     switch (kind) {
@@ -108,54 +105,54 @@ int varCount(const SymbolTable *self,const SymbolKind kind) {
     }
 }
 SymbolKind kindOf(const SymbolTable *self,const char name[], const int length) {
-    const int hashVal = hash(name,length) % self->size;
+    const int hashVal = fnv1a_hash(name,length) % self->size;
     const SymbolList* list = self->subroutineScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.kind;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->kind;
         }
         list = list->next;
     }
     list = self->classScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.kind;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->kind;
         }
         list = list->next;
     }
     return SK_NONE;
 }
 char* typeOf(const SymbolTable *self,const char name[], const int length) {
-    const int hashVal = hash(name,length) % self->size;
+    const int hashVal = fnv1a_hash(name,length) % self->size;
     const SymbolList* list = self->subroutineScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.type;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->type;
         }
         list = list->next;
     }
     list = self->classScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.type;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->type;
         }
         list = list->next;
     }
     return "";
 }
 int indexOf(const SymbolTable *self,const char name[], const int length) {
-    const int hashVal = hash(name,length) % self->size;
+    const int hashVal = fnv1a_hash(name,length) % self->size;
     const SymbolList* list = self->subroutineScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.index;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->index;
         }
         list = list->next;
     }
     list = self->classScope[hashVal];
     while (list != NULL) {
-        if (strcmp(list->symbol.name,name) == 0) {
-            return list->symbol.index;
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->index;
         }
         list = list->next;
     }

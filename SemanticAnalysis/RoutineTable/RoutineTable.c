@@ -26,7 +26,7 @@ char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *
     const int hashValue = fnv1a_hash(name,nameLength) % self->size;
     RoutineList **listPtr = &self->routines[hashValue];
     while (*listPtr != NULL) {
-        if ((*listPtr)->routine->name == name) {
+        if (strcmp((*listPtr)->routine->name,name) == 0) {
             return 0;
         }
         *listPtr = (*listPtr)->next;
@@ -40,7 +40,7 @@ Routine* getRoutine(const RoutineTable *self,const char *name, const int nameLen
     const int hashVal = fnv1a_hash(name,nameLength);
     const RoutineList *list = self->routines[hashVal];
     while (list != NULL) {
-        if (strcmp(list->routine->name,name)) {
+        if (strcmp(list->routine->name,name) == 0) {
             return list->routine;
         }
         list = list->next;

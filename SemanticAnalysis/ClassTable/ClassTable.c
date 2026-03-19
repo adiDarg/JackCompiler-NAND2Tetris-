@@ -8,7 +8,7 @@
 #include <string.h>
 
 #include "../HashingFunctions/HashingFunctions.h"
-ClassTable* routine_table_constructor(const size_t tableSize) {
+ClassTable* class_table_constructor(const size_t tableSize) {
     ClassTable *table = malloc(sizeof(ClassTable));
     table->size = tableSize;
     table->classes = malloc(sizeof(ClassList*)*tableSize);

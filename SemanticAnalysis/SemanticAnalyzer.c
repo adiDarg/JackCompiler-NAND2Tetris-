@@ -95,8 +95,15 @@ SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
     semantic_data->isError = 0;
     return semantic_data;
 }
+void reportError(SemanticData* self,const char *error,const int line) {
+    self->isError = 1;
+    snprintf(self->error,self->error_size,"line %d: %s",line,error);
+}
+
 
 char AnalyzeClass(SemanticData *self);
+char AnalyzeClassVarDec(SemanticData *self);
+char AnalyzeSubRoutineDec(SemanticData *self);
 
 char Analyze(SemanticData *self) {
     NodeAST *node = self->current;
@@ -134,24 +141,102 @@ char AnalyzeClass(SemanticData *self) {
             continue;
         }
         if (child->nodeType == NODE_IDENTIFIER) {
-            if (child->token == NULL) {
-                self->isError = 1;
-                snprintf(self->error,self->error_size,"Error in AST creation: failed to create token for class identifier");
-                return 0;
-            }
             defineClass(self->class_table,child->token->info.identifier,
                 strlen(child->token->info.identifier));
         }
         else if (child->nodeType == NODE_CLASS_VAR_DEC) {
             self->current = child;
-            result = 1 & Analyze(self);
+            result = 1 & AnalyzeClassVarDec(self);
             self->current = node;
         }
         else if (child->nodeType == NODE_SUBROUTINE_DEC) {
             self->current = child;
-            result = 1 & Analyze(self);
+            result = 1 & AnalyzeSubRoutineDec(self);
             self->current = node;
         }
     }
     return result;
+}
+
+SymbolKind subroutine_scope_of_node(const NodeAST *scope_node);
+char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const int len);
+char AnalyzeClassVarDec(SemanticData *self) {
+    const NodeAST* node = self->current;
+    const NodeAST *scope_node = node->children[0];
+    const SymbolKind kind = subroutine_scope_of_node(scope_node);
+    if (kind == SK_NONE) {
+        reportError(self,"invalid scope type for variable",scope_node->token->line);
+        return 0;
+    }
+    const NodeAST *type_node = node->children[1];
+    char* typeStr = type_of_node(type_node,self->class_table,100);
+    if (typeStr == "") {
+        reportError(self,"invalid type for variable",type_node->token->line);
+        free(typeStr);
+        return 0;
+    }
+
+    for (int i = 2; i < node->currChildIndex; i+=2) {
+        const NodeAST *varName = node->children[i];
+        char *identifier = varName->token->info.identifier;
+        const int result = define(self->symbol_table,identifier,strlen(identifier),
+            typeStr,strlen(typeStr),kind);
+        if (!result) {
+            reportError(self,"variable is already defined",varName->token->line);
+            free(typeStr);
+            return 0;
+        }
+    }
+    free(typeStr);
+    return 1;
+}
+SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
+    const Keyword scope_value = scope_node->token->info.keyword;
+    if (scope_value == KW_STATIC) {
+        return SK_STATIC;
+    }
+    if (scope_value == KW_FIELD) {
+        return SK_FIELD;
+    }
+    return SK_NONE;
+}
+char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const int len) {
+    //A type can be int,char,boolean or className
+    //int,char,boolean are keyword tokens
+    //className is an identifier token
+    //Therefore: tokenType of the type node would be a typeOfType
+    const TokenType typeOfType = type_node->token->type;
+    char *typeStr = malloc(len);
+    if (typeOfType == TT_KEYWORD) {
+        //Needs to be int, char or boolean
+        const Keyword type_value = type_node->token->info.keyword;
+        switch (type_value) {
+            case KW_INT: {
+                strncpy(typeStr,"int",sizeof(typeStr));
+                break;
+            }
+            case KW_CHAR: {
+                strncpy(typeStr,"char",sizeof(typeStr));
+                break;
+            }
+            case KW_BOOLEAN: {
+                strncpy(typeStr,"boolean",sizeof(typeStr));
+                break;
+            }
+            default:
+                return "";
+        }
+    }
+    else if (typeOfType == TT_IDENTIFIER) {
+        const char *identifier = type_node->token->info.identifier;
+        if (!doesClassExist(class_table,identifier,strlen(identifier))) {
+            //Class is not defined
+            return "";
+        }
+        strncpy(typeStr,identifier,sizeof(typeStr));
+    }
+    else {
+        return "";
+    }
+    return typeStr;
 }

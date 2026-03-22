@@ -104,6 +104,8 @@ void reportError(SemanticData* self,const char *error,const int line) {
 char AnalyzeClass(SemanticData *self);
 char AnalyzeClassVarDec(SemanticData *self);
 char AnalyzeSubRoutineDec(SemanticData *self);
+char AnalyzeParameterList(SemanticData *self);
+char AnalyzeSubroutineBody(SemanticData *self);
 
 char Analyze(SemanticData *self) {
     NodeAST *node = self->current;
@@ -239,4 +241,42 @@ char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const 
         return "";
     }
     return typeStr;
+}
+
+RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node);
+char* getRoutineType(const NodeAST *routine_type_node);
+char AnalyzeSubRoutineDec(SemanticData *self) {
+    NodeAST *node = self->current;
+    const NodeAST *routine_kind_node = node->children[0];
+    const RoutineKind kind = getRoutineKindOfNode(routine_kind_node);
+    if (kind == ROUTINE_NONE) {
+        reportError(self,"Routine kind should be constructor, function or method",routine_kind_node->token->line);
+        return 0;
+    }
+
+    const NodeAST *routine_type_node = node->children[1];
+    const char* routine_type = getRoutineType(routine_kind_node);
+    if (routine_type == "") {
+        reportError(self,"Invalid routine type",routine_type_node->token->line);
+        return 0;
+    }
+
+    const char* routine_name = node->children[2]->token->info.identifier;
+    if (!defineRoutine(self->routine_table,kind,
+        routine_name,strlen(routine_name),
+        routine_type,strlen(routine_type))) {
+        reportError(self,"Routine already defined",node->children[2]->token->line);
+        return 0;
+        }
+
+    self->current = node->children[5];
+    if (!AnalyzeParameterList(self)) {
+        return 0;
+    }
+    self->current = node->children[7];
+    if (!AnalyzeSubroutineBody(self)) {
+        return 0;
+    }
+    self->current = node;
+    return 1;
 }

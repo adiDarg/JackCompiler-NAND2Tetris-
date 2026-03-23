@@ -161,7 +161,7 @@ char AnalyzeClass(SemanticData *self) {
 }
 
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node);
-char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const int len);
+char* type_of_node(const NodeAST *type_node,const ClassTable *class_table);
 char AnalyzeClassVarDec(SemanticData *self) {
     const NodeAST* node = self->current;
     const NodeAST *scope_node = node->children[0];
@@ -171,7 +171,7 @@ char AnalyzeClassVarDec(SemanticData *self) {
         return 0;
     }
     const NodeAST *type_node = node->children[1];
-    char* typeStr = type_of_node(type_node,self->class_table,100);
+    char* typeStr = type_of_node(type_node,self->class_table);
     if (typeStr == "") {
         reportError(self,"invalid type for variable",type_node->token->line);
         free(typeStr);
@@ -202,13 +202,13 @@ SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
     }
     return SK_NONE;
 }
-char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const int len) {
+char* type_of_node(const NodeAST *type_node,const ClassTable *class_table) {
     //A type can be int,char,boolean or className
     //int,char,boolean are keyword tokens
     //className is an identifier token
     //Therefore: tokenType of the type node would be a typeOfType
     const TokenType typeOfType = type_node->token->type;
-    char *typeStr = malloc(len);
+    char *typeStr = malloc(100);
     if (typeOfType == TT_KEYWORD) {
         //Needs to be int, char or boolean
         const Keyword type_value = type_node->token->info.keyword;
@@ -226,6 +226,7 @@ char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const 
                 break;
             }
             default:
+                free(typeStr);
                 return "";
         }
     }
@@ -233,11 +234,13 @@ char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const 
         const char *identifier = type_node->token->info.identifier;
         if (!doesClassExist(class_table,identifier,strlen(identifier))) {
             //Class is not defined
+            free(typeStr);
             return "";
         }
         strncpy(typeStr,identifier,sizeof(typeStr));
     }
     else {
+        free(typeStr);
         return "";
     }
     return typeStr;
@@ -318,4 +321,23 @@ char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_t
             return "";
         }
     }
+}
+
+char AnalyzeParameterList(SemanticData *self) {
+    const NodeAST *node = self->current;
+    for (int i = 0; i < node->currChildIndex; i+=3) {
+        const NodeAST *type_node = node->children[i];
+        const NodeAST *ident_node = node->children[i+1];
+        char *type_str = type_of_node(type_node,self->class_table);
+        char *identifier = ident_node->token->info.identifier;
+        if (kindOf(self->symbol_table,identifier,strlen(identifier)) == SK_ARG) {
+            //Symbol already defined as an argument
+            reportError(self,strcat(identifier," already defined as an argument"),ident_node->token->line);
+            free(type_str);
+            return 0;
+        }
+        define(self->symbol_table,identifier,strlen(identifier),
+            type_str,strlen(type_str),SK_ARG);
+    }
+    return 1;
 }

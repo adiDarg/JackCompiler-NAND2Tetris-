@@ -244,7 +244,7 @@ char* type_of_node(const NodeAST *type_node,const ClassTable *class_table,const 
 }
 
 RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node);
-char* getRoutineType(const NodeAST *routine_type_node);
+char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table);
 char AnalyzeSubRoutineDec(SemanticData *self) {
     NodeAST *node = self->current;
     const NodeAST *routine_kind_node = node->children[0];
@@ -255,7 +255,7 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
     }
 
     const NodeAST *routine_type_node = node->children[1];
-    const char* routine_type = getRoutineType(routine_kind_node);
+    const char* routine_type = getRoutineType(routine_kind_node,self->class_table);
     if (routine_type == "") {
         reportError(self,"Invalid routine type",routine_type_node->token->line);
         return 0;
@@ -279,4 +279,43 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
     }
     self->current = node;
     return 1;
+}
+RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node) {
+    const Keyword keyword = routine_kind_node->token->info.keyword;
+    if (keyword == KW_CONSTRUCTOR) {
+        return ROUTINE_CONSTRUCTOR;
+    }
+    if (keyword == KW_METHOD) {
+        return ROUTINE_METHOD;
+    }
+    if (keyword == KW_FUNCTION) {
+        return ROUTINE_FUNCTION;
+    }
+    return ROUTINE_NONE;
+}
+char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table) {
+    if (routine_type_node->token->type == TT_IDENTIFIER) {
+        char *class = routine_type_node->token->info.identifier;
+        if (doesClassExist(class_table,class,strlen(class))) {
+            return class;
+        }
+        return "";
+    }
+    switch (routine_type_node->token->info.keyword) {
+        case KW_INT: {
+            return "int";
+        }
+        case KW_CHAR: {
+            return "char";
+        }
+        case KW_BOOLEAN: {
+            return "boolean";
+        }
+        case KW_VOID: {
+            return "void";
+        }
+        default: {
+            return "";
+        }
+    }
 }

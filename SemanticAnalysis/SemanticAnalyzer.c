@@ -106,6 +106,8 @@ char AnalyzeClassVarDec(SemanticData *self);
 char AnalyzeSubRoutineDec(SemanticData *self);
 char AnalyzeParameterList(SemanticData *self);
 char AnalyzeSubroutineBody(SemanticData *self);
+char AnalyzeVarDec(SemanticData *self);
+char AnalyzeStatements(SemanticData *self);
 
 char Analyze(SemanticData *self) {
     NodeAST *node = self->current;
@@ -340,4 +342,19 @@ char AnalyzeParameterList(SemanticData *self) {
             type_str,strlen(type_str),SK_ARG);
     }
     return 1;
+}
+
+char AnalyzeSubroutineBody(SemanticData *self) {
+    NodeAST *node = self->current;
+    int i;
+    for (i = 1; i < node->currChildIndex - 2; i++) {
+        self->current = node->children[i];
+        if (!AnalyzeVarDec(self)) {
+            return 0;
+        }
+    }
+    self->current = node->children[i];
+    const char success = AnalyzeStatements(self);
+    self->current = node;
+    return success;
 }

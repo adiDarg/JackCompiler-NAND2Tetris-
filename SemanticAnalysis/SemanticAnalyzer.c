@@ -102,6 +102,7 @@ void reportError(SemanticData* self,const char *error,const int line) {
 
 
 char AnalyzeClass(SemanticData *self);
+char generalVarDec(SemanticData *self,const SymbolKind kind);
 char AnalyzeClassVarDec(SemanticData *self);
 char AnalyzeSubRoutineDec(SemanticData *self);
 char AnalyzeParameterList(SemanticData *self);
@@ -164,14 +165,8 @@ char AnalyzeClass(SemanticData *self) {
 
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node);
 char* type_of_node(const NodeAST *type_node,const ClassTable *class_table);
-char AnalyzeClassVarDec(SemanticData *self) {
-    const NodeAST* node = self->current;
-    const NodeAST *scope_node = node->children[0];
-    const SymbolKind kind = subroutine_scope_of_node(scope_node);
-    if (kind == SK_NONE) {
-        reportError(self,"invalid scope type for variable",scope_node->token->line);
-        return 0;
-    }
+char generalVarDec(SemanticData *self,const SymbolKind kind) {
+    const NodeAST *node = self->current;
     const NodeAST *type_node = node->children[1];
     char* typeStr = type_of_node(type_node,self->class_table);
     if (typeStr == "") {
@@ -193,6 +188,16 @@ char AnalyzeClassVarDec(SemanticData *self) {
     }
     free(typeStr);
     return 1;
+}
+char AnalyzeClassVarDec(SemanticData *self) {
+    const NodeAST* node = self->current;
+    const NodeAST *scope_node = node->children[0];
+    const SymbolKind kind = subroutine_scope_of_node(scope_node);
+    if (kind == SK_NONE) {
+        reportError(self,"invalid scope type for variable",scope_node->token->line);
+        return 0;
+    }
+    return generalVarDec(self,kind);
 }
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
     const Keyword scope_value = scope_node->token->info.keyword;
@@ -357,4 +362,7 @@ char AnalyzeSubroutineBody(SemanticData *self) {
     const char success = AnalyzeStatements(self);
     self->current = node;
     return success;
+}
+char AnalyzeVarDec(SemanticData *self) {
+    return generalVarDec(self,SK_VAR);
 }

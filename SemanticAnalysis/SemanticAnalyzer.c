@@ -9,77 +9,83 @@
 
 #include "RoutineTable/RoutineTable.h"
 #include "SymbolTable/SymbolTable.h"
-DataType getDT(SemanticData *data) {
+void getDT(SemanticData *data) {
     const Token *token = data->current->token;
     const SymbolTable *symbol_table = data->symbol_table;
     const RoutineTable *routine_table = data->routine_table;
     const ClassTable *class_table = data->class_table;
+    DataType data_type = TYPE_UNKNOWN;
     switch (token->type) {
         case TT_SYMBOL:
             case TT_STRING_CONST: {
-            return TYPE_CHAR;
+            data_type = TYPE_CHAR;
+            break;
         }
         case TT_INT_CONST: {
-            return TYPE_INT;
+            data_type = TYPE_INT;
+            break;
         }
         case TT_KEYWORD: {
             if (token->info.keyword == KW_TRUE || token->info.keyword == KW_FALSE) {
-                return TYPE_BOOLEAN;
+                data_type = TYPE_BOOLEAN;
             }
-            if (token->info.keyword == KW_THIS) {
-                return TYPE_OBJECT;
+            else if (token->info.keyword == KW_THIS) {
+                data_type = TYPE_OBJECT;
             }
+            break;
         }
         case TT_IDENTIFIER: {
             const char *type = typeOf(symbol_table,token->info.identifier,strlen(token->info.identifier));
-            if (type == "int") {
-                return TYPE_INT;
+            if (strcmp(type,"int") == 0) {
+                data_type = TYPE_INT;
             }
-            if (type == "char") {
-                return TYPE_CHAR;
+            else if (strcmp(type,"char") == 0) {
+                data_type = TYPE_CHAR;
             }
-            if (type == "boolean") {
-                return TYPE_BOOLEAN;
+            else if (strcmp(type,"boolean") == 0) {
+                data_type = TYPE_BOOLEAN;
             }
-            if (type != "") {
+            else if (strcmp(type,"")) {
                 if (doesClassExist(class_table,type,strlen(type))) {
-                    return TYPE_OBJECT;
+                    data_type = TYPE_OBJECT;
                 }
-                return TYPE_UNKNOWN;
             }
 
             const Routine *routine = getRoutine(routine_table,
             token->info.identifier,strlen(token->info.identifier));
             if (routine != NULL) {
                 type = routine->type;
-                if (type == "int") {
-                    return TYPE_INT;
+                if (strcmp(type,"int") == 0) {
+                    data_type = TYPE_INT;
                 }
-                if (type == "char") {
-                    return TYPE_CHAR;
+                else if (strcmp(type,"char") == 0) {
+                    data_type = TYPE_CHAR;
                 }
-                if (type == "boolean") {
-                    return TYPE_BOOLEAN;
+                else if (strcmp(type,"boolean") == 0) {
+                    data_type = TYPE_BOOLEAN;
                 }
-                if (type == "void") {
-                    return TYPE_VOID;
+                else if (strcmp(type,"void") == 0) {
+                    data_type = TYPE_VOID;
                 }
-                if (doesClassExist(class_table,type,strlen(type))) {
-                    return TYPE_OBJECT;
+                else if (strcmp(type,"")) {
+                    if (doesClassExist(class_table,type,strlen(type))) {
+                        data_type = TYPE_OBJECT;
+                    }
                 }
-                return TYPE_UNKNOWN;
             }
-            data->isError = 1;
-            snprintf(data->error,data->error_size,"line %d: Undefined identifier '%s'",
-                token->line, token->info.identifier);
-            return TYPE_UNKNOWN;
+            else {
+                data->isError = 1;
+                snprintf(data->error,data->error_size,"line %d: Undefined identifier '%s'",
+                    token->line, token->info.identifier);
+            }
+            break;
         }
         default: {
             data->isError = 1;
             snprintf(data->error,data->error_size,"line %d: Invalid type",token->line);
-            return TYPE_UNKNOWN;
         }
     }
+    data->current->dataType = data_type;
 }
 
 SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
@@ -109,33 +115,17 @@ char AnalyzeParameterList(SemanticData *self);
 char AnalyzeSubroutineBody(SemanticData *self);
 char AnalyzeVarDec(SemanticData *self);
 char AnalyzeStatements(SemanticData *self);
+char AnalyzeStatement(SemanticData *self);
+char AnalyzeLetStatement(SemanticData *self);
+char AnalyzeIfStatement(SemanticData *self);
+char AnalyzeWhileStatement(SemanticData *self);
+char AnalyzeDoStatement(SemanticData *self);
+char AnalyzeReturnStatement(SemanticData *self);
+char AnalyzeExpression(SemanticData *self);
+
 
 char Analyze(SemanticData *self) {
-    NodeAST *node = self->current;
-    if (node == NULL) {
-        return 1;
-    }
-    switch (node->nodeType) {
-        case NODE_IDENTIFIER: case NODE_INTEGER_CONSTANT:
-        case NODE_STRING_CONSTANT:case NODE_SYMBOL:case NODE_KEYWORD: {
-            node->dataType = getDT(self);
-            break;
-        }
-        case NODE_ROOT: {
-            return AnalyzeClass(self);
-        }
-        default: {
-            for (int i = 0; i < node->currChildIndex; i++) {
-                self->current = node->children[i];
-                self->current = node;
-            }
-            break;
-        }
-    }
-    if (self->isError) {
-        return 0;
-    }
-    return 1;
+    return AnalyzeClass(self);
 }
 char AnalyzeClass(SemanticData *self) {
     NodeAST* node = self->current;
@@ -365,4 +355,93 @@ char AnalyzeSubroutineBody(SemanticData *self) {
 }
 char AnalyzeVarDec(SemanticData *self) {
     return generalVarDec(self,SK_VAR);
+}
+
+char AnalyzeStatements(SemanticData *self) {
+    NodeAST *node = self->current;
+    for (int i = 0; i < node->currChildIndex; i++) {
+        self->current = node->children[i];
+        if (!AnalyzeStatement(self)) {
+            return 0;
+        }
+    }
+    self->current = node;
+    return 1;
+}
+char AnalyzeStatement(SemanticData *self) {
+    switch (self->current->nodeType) {
+        case NODE_LET_STATEMENT: {
+            return AnalyzeLetStatement(self);
+        }
+        case NODE_IF_STATEMENT: {
+            return AnalyzeIfStatement(self);
+        }
+        case NODE_WHILE_STATEMENT: {
+            return AnalyzeWhileStatement(self);
+        }
+        case NODE_DO_STATEMENT: {
+            return AnalyzeDoStatement(self);
+        }
+        case NODE_RETURN_STATEMENT: {
+            return AnalyzeReturnStatement(self);
+        }
+        default: {
+            return 0;
+        }
+    }
+}
+
+char AnalyzeLetStatement(SemanticData *self) {
+    NodeAST *node = self->current;
+
+    //datatype of variable
+    self->current = node->children[1];
+    getDT(self);
+    const DataType data_type = self->current->dataType;
+    if (data_type == TYPE_UNKNOWN) {
+        reportError(self,"Undefined identifier",self->current->token->line);
+        return 0;
+    }
+
+    //Expression index = where the expression is in the statement
+    int expressionIndex;
+    //let varName('['expression']')? '=' ...
+    //children[2] = '[' -> varName[expression]=...
+    //children[2] = '=' -> varName=...
+    if (node->children[2]->token->info.symbol == '[') {
+        //Verify variable to be of array type
+        const char *ident = node->children[1]->token->info.identifier;
+        const char *type = typeOf(self->symbol_table,ident,strlen(ident));
+        if (strcmp(type,"Array")) {
+            reportError(self,"Can't index non-array data type",node->children[1]->token->line);
+            return 0;
+        }
+        //Verify expression to be a valid index
+        self->current = node->children[3];
+        if (!AnalyzeExpression(self)) {
+            return 0;
+        }
+        if (self->current->dataType != TYPE_INT) {
+            reportError(self,"Expected integer as index for array",node->children[1]->token->line);
+            return 0;
+        }
+        //TODO: verify that expression < array.length, i.e -> add array metadata
+        expressionIndex = 6;
+    }
+    else {
+        expressionIndex = 3;
+    }
+    NodeAST *expression_node = node->children[expressionIndex];
+    self->current = expression_node;
+    if (!AnalyzeExpression(self)) {
+        return 0;
+    }
+    if ((data_type == TYPE_OBJECT && expression_node->dataType != TYPE_INT) ||
+        expression_node->dataType != data_type) {
+        reportError(self,"Type mismatch",node->children[1]->token->line);
+        return 0;
+    }
+
+    self->current = node;
+    return 1;
 }

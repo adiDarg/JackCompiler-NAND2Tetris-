@@ -122,6 +122,7 @@ char AnalyzeWhileStatement(SemanticData *self);
 char AnalyzeDoStatement(SemanticData *self);
 char AnalyzeReturnStatement(SemanticData *self);
 char AnalyzeExpression(SemanticData *self);
+char AnalyzeSubroutineCall(SemanticData *self);
 
 
 char Analyze(SemanticData *self) {
@@ -425,7 +426,12 @@ char AnalyzeLetStatement(SemanticData *self) {
             reportError(self,"Expected integer as index for array",node->children[1]->token->line);
             return 0;
         }
-        //TODO: verify that expression < array.length, i.e -> add array metadata
+        //If array is shorter than the index -> illegal indexing
+        if (lengthOf(self->symbol_table,ident,strlen(ident)) < self->current->token->info.intVal) {
+            reportError(self,"Index larger than array size",node->children[3]->token->line);
+            return 0;
+        }
+        self->current = node;
         expressionIndex = 6;
     }
     else {
@@ -436,12 +442,117 @@ char AnalyzeLetStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
+
     if ((data_type == TYPE_OBJECT && expression_node->dataType != TYPE_INT) ||
         expression_node->dataType != data_type) {
         reportError(self,"Type mismatch",node->children[1]->token->line);
         return 0;
     }
 
+    self->current = node;
+    return 1;
+}
+char AnalyzeIfStatement(SemanticData *self) {
+    NodeAST* node = self->current;
+    self->current = node->children[2];
+    if (!AnalyzeExpression(self)) {
+        return 0;
+    }
+    if (self->current->dataType != TYPE_BOOLEAN) {
+        return 0;
+    }
+    self->current = node->children[5];
+    if (!AnalyzeStatements(self)) {
+        return 0;
+    }
+    //Check for existance of else statement
+    if (node->currChildIndex == 10) {
+        self->current = node->children[9];
+        if (!AnalyzeStatements(self)) {
+            return 0;
+        }
+    }
+    self->current = node;
+    return 1;
+}
+char AnalyzeWhileStatement(SemanticData *self) {
+    NodeAST* node = self->current;
+    self->current = node->children[2];
+    if (!AnalyzeExpression(self)) {
+        return 0;
+    }
+    if (self->current->dataType != TYPE_BOOLEAN) {
+        return 0;
+    }
+    self->current = node->children[5];
+    if (!AnalyzeStatements(self)) {
+        return 0;
+    }
+    self->current = node;
+    return 1;
+}
+char AnalyzeDoStatement(SemanticData *self) {
+    NodeAST *node = self->current;
+    if (!AnalyzeSubroutineCall(self)) {
+        return 0;
+    }
+    self->current = node;
+    return 1;
+}
+char AnalyzeReturnStatement(SemanticData *self) {
+    NodeAST *node = self->current;
+    self->current = node->children[1];
+    if (!AnalyzeExpression(self)) {
+        return 0;
+    }
+    //current = expression
+    //node = returnStatement
+    //parent = statement
+    //parent^2 = statements
+    //parent^3 = subroutineBody
+    //parent^4 = subroutineDec
+    NodeAST *subroutineDecNode = node->parent->parent->parent->parent;
+    const char *name = subroutineDecNode->children[2]->token->info.identifier;
+    const Routine *routine = getRoutine(self->routine_table,name,strlen(name));
+    const char* type_routine = routine->type;
+    switch (self->current->dataType) {
+        case TYPE_INT: {
+            if (strcmp(type_routine,"int")) {
+                reportError(self,"expected int return type",self->current->token->line);
+                return 0;
+            }
+            break;
+        }
+        case TYPE_CHAR: {
+            if (strcmp(type_routine,"char")) {
+                reportError(self,"expected char return type",self->current->token->line);
+                return 0;
+            }
+            break;
+        }
+        case TYPE_OBJECT: {
+            if (self->current->token == NULL ||
+                strcmp(self->current->token->info.identifier,type_routine)) {
+                reportError(self,"expected Object return type",self->current->token->line);
+                return 0;
+            }
+            break;
+        }
+        case TYPE_BOOLEAN: {
+            if (strcmp(type_routine,"boolean")) {
+                reportError(self,"expected boolean return type",self->current->token->line);
+                return 0;
+            }
+            break;
+        }
+        case TYPE_VOID: {
+            reportError(self,"expected no return type",self->current->token->line);
+            return 0;
+        }
+        default: {
+            return 0;
+        }
+    }
     self->current = node;
     return 1;
 }

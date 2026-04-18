@@ -158,6 +158,31 @@ int indexOf(const SymbolTable *self,const char name[], const int length) {
     }
     return -1;
 }
+
+int lengthOf(const SymbolTable* self,const char name[], const int length) {
+    const int hashVal = fnv1a_hash(name,length) % self->size;
+    const SymbolList* list = self->subroutineScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            if (strcmp(list->symbol->type,"Array")==0) {
+                return list->symbol->arrayLength;
+            }
+            return -1;
+        }
+        list = list->next;
+    }
+    list = self->classScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            if (strcmp(list->symbol->type,"Array")==0) {
+                return list->symbol->arrayLength;
+            }
+            return -1;
+        }
+        list = list->next;
+    }
+    return -1;
+}
 void destroySymbolList(SymbolList* list) {
     while (list != NULL) {
         SymbolList* temp = list;

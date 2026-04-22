@@ -123,7 +123,10 @@ char AnalyzeDoStatement(SemanticData *self);
 char AnalyzeReturnStatement(SemanticData *self);
 char AnalyzeExpression(SemanticData *self);
 char AnalyzeSubroutineCall(SemanticData *self);
-
+char AnalyzeTerm(SemanticData *self);
+//char AnalyzeOperator(SemanticData *self); Redundant
+char isOperatorLegal(const DataType data,const NodeAST *symbol);
+char AnalyzeExpressionList(SemanticData *self);
 
 char Analyze(SemanticData *self) {
     return AnalyzeClass(self);
@@ -511,7 +514,7 @@ char AnalyzeReturnStatement(SemanticData *self) {
     //parent^2 = statements
     //parent^3 = subroutineBody
     //parent^4 = subroutineDec
-    NodeAST *subroutineDecNode = node->parent->parent->parent->parent;
+    const NodeAST *subroutineDecNode = node->parent->parent->parent->parent;
     const char *name = subroutineDecNode->children[2]->token->info.identifier;
     const Routine *routine = getRoutine(self->routine_table,name,strlen(name));
     const char* type_routine = routine->type;
@@ -555,4 +558,141 @@ char AnalyzeReturnStatement(SemanticData *self) {
     }
     self->current = node;
     return 1;
+}
+
+char isOperatorLegal(const DataType data,const NodeAST *symbol) {
+    switch (symbol->token->info.symbol) {
+        case '+': case '-': case '*': case '/': case '<': case '>': {
+            return data == TYPE_INT;
+        }
+        case '&': case '|': {
+            return data == TYPE_BOOLEAN;
+        }
+        default: {
+            return 1;
+        }
+    }
+}
+char AnalyzeExpression(SemanticData *self) {
+    NodeAST *node = self->current;
+    self->current = node->children[0];
+    if (!AnalyzeTerm(self)) {
+        return 0;
+    }
+    const DataType type = self->current->dataType;
+    node->dataType = type;
+    for (int i = 1; i < node->currChildIndex; i+=2) {
+        self->current = node->children[i];
+        //No need to analyze operator
+        self->current = node->children[i+1];
+        if (!AnalyzeTerm(self)) {
+            return 0;
+        }
+        if (self->current->dataType != type) {
+            reportError(self,"Type mismatch in expression",self->current->token->line);
+            return 0;
+        }
+        if (!isOperatorLegal(type,node->children[i])) {
+            reportError(self,"Illegal operator for data type",self->current->token->line);
+            return 0;
+        }
+    }
+    self->current = node;
+    return 1;
+}
+
+char AnalyzeSubroutineCall(SemanticData *self) {
+    NodeAST *node = self->current;
+    //subName(expressionList) vs object.subName(expressionList)
+    char *class;
+    char *subroutine_name;
+    NodeAST *expression_list;
+    int line;
+    if (node->children[2]->nodeType == NODE_EXPRESSION) {
+        class = self->root->children[1]->token->info.identifier;
+        subroutine_name = node->children[0]->token->info.identifier;
+        expression_list = node->children[2];
+        line = node->children[0]->token->line;
+    }
+    else {
+        const Token *ident_token = node->children[0]->token;
+        const char *ident = ident_token->info.identifier;
+        line = ident_token->line;
+        class = typeOf(self->symbol_table,ident,strlen(ident));
+        subroutine_name = node->children[2]->token->info.identifier;
+        expression_list = node->children[4];
+    }
+    if (strcmp(class,"") == 0) {
+        reportError(self,"Undefined variable",line);
+        return 0;
+    }
+    const Routine *routine = getRoutine(self->routine_table,subroutine_name,strlen(subroutine_name));
+    if (routine == NULL) {
+        reportError(self,"Undefined routine called",line);
+        return 0;
+    }
+    if (strcmp(routine->class,class)) {
+        reportError(self,"Routine can't be called from this class",line);
+    }
+    self->current = expression_list;
+    if (!AnalyzeExpressionList(self)) {
+        return 0;
+    }
+    self->current = node;
+    return 1;
+}
+char AnalyzeTerm(SemanticData *self) {
+    NodeAST *node = self->current;
+    switch (node->children[0]->nodeType) {
+        case NODE_UNARY_OP: {
+            self->current = node->children[1];
+            const char res = AnalyzeTerm(self);
+            self->current = node;
+            return res;
+        }
+
+        case NODE_SUBROUTINE_CALL: {
+            self->current = node->children[0];
+            const char res = AnalyzeSubroutineCall(self);
+            self->current = node;
+            return res;
+        }
+
+        case NODE_INTEGER_CONSTANT: case NODE_STRING_CONSTANT: case NODE_KEYWORD_CONSTANT: {
+            return 1;
+        }
+
+        case NODE_IDENTIFIER: {
+            const char *name = node->children[0]->token->info.identifier;
+            const char *ident_type = typeOf(self->symbol_table,name,strlen(name));
+            if (strcmp(ident_type,"") == 0) {
+                reportError(self,"Undefined variable",node->children[0]->token->line);
+                return 0;
+            }
+
+            if (node->currChildIndex > 1) {
+                self->current = node->children[2];
+                if (!AnalyzeExpression(self)) {
+                    return 0;
+                }
+                if (strcmp(ident_type,"Array")) {
+                    reportError(self,"Expected array type",node->children[2]->token->line);
+                    return 0;
+                }
+                //No length check for now - overflow possible
+            }
+            return 1;
+        }
+
+        case NODE_SYMBOL: {
+            self->current = node->children[1];
+            const char res = AnalyzeExpression(self);
+            self->current = node;
+            return res;
+        }
+
+        default: {
+            return 0;
+        }
+    }
 }

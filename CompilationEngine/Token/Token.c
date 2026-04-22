@@ -33,3 +33,10 @@ Token* createToken(JackTokenizer *tokenizer) {
     }
     return token;
 }
+Token* createToken(const TokenType type,const TokenInfo info,const int line) {
+    Token *token = malloc(sizeof(Token));
+    token->info = info;
+    token->type = type;
+    token->line = line;
+    return token;
+}

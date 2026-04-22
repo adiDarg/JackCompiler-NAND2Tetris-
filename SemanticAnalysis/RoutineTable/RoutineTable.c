@@ -16,13 +16,15 @@ RoutineTable* routine_table_constructor(const size_t tableSize) {
 
 
 char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name, const int nameLength,
-    const char *type, const int typeLength) {
+    const char *type, const int typeLength, const char *class, const int classLength) {
     Routine *routine = malloc(sizeof(Routine));
     routine->kind = kind;
     routine->name = malloc(nameLength);
     strncpy(routine->name,name,nameLength);
     routine->type = malloc(typeLength);
     strncpy(routine->type,type,typeLength);
+    routine->class = malloc(classLength);
+    strncpy(routine->class,class,classLength);
     const int hashValue = fnv1a_hash(name,nameLength) % self->size;
     RoutineList **listPtr = &self->routines[hashValue];
     while (*listPtr != NULL) {

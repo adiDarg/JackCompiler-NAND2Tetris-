@@ -14,6 +14,7 @@ typedef enum RoutineKind {
 
 struct RoutineValue {
     RoutineKind kind;
+    char *class;
     char *name;
     char *type;
 } typedef Routine;

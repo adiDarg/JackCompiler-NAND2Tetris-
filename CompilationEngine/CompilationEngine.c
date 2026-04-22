@@ -654,6 +654,11 @@ int CompileReturn(CompilationEngine* self) {
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
+
+//Compile expression with x_presedence
+int compile_e1_pre(CompilationEngine* self);
+int compile_e2_pre(CompilationEngine* self);
+int compile_e3_pre(CompilationEngine* self);
 int CompileExpression(CompilationEngine* self) {
     writeOut(self,"<expression>\n");
     self->tab++;
@@ -661,19 +666,81 @@ int CompileExpression(CompilationEngine* self) {
     NodeAST* node = construct_ast_node(NODE_EXPRESSION,self->ast_curr,3,NULL);
     self->ast_curr = node;
 
-    if (!CompileTerm(self)) {
+    if (!compile_e1_pre(self)) {
         return 0;
     }
-    while (compileOperator(self)) {
-        if (!CompileTerm(self)) {
+    if (compileSymbol(self,"&") || compileSymbol(self,"|")) {
+        if (!compile_e1_pre(self)) {
             return 0;
-        };
+        }
+    }
+    else {
+        self->jack_tokenizer->isError = 0;
+        strcpy(self->error,"");
     }
     self->tab--;
     writeOut(self,"</expression>\n");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
+int compile_e1_pre(CompilationEngine* self) {
+    NodeAST* node = construct_ast_node(NODE_E1,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
+    if (!compile_e2_pre(self)) {
+        return 0;
+    }
+    if (compileSymbol(self,"<") || compileSymbol(self,">"),compileSymbol(self,"=")) {
+        if (!compile_e2_pre(self)) {
+            return 0;
+        }
+    }
+    else {
+        self->jack_tokenizer->isError = 0;
+        strcpy(self->error,"");
+    }
+    self->ast_curr = self->ast_curr->parent;
+    return 1;
+}
+int compile_e2_pre(CompilationEngine* self) {
+    NodeAST* node = construct_ast_node(NODE_E2,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
+    if (!compile_e3_pre(self)) {
+        return 0;
+    }
+    if (compileSymbol(self,"+") || compileSymbol(self,"-")) {
+        if (!compile_e3_pre(self)) {
+            return 0;
+        }
+    }
+    else {
+        self->jack_tokenizer->isError = 0;
+        strcpy(self->error,"");
+    }
+    self->ast_curr = self->ast_curr->parent;
+    return 1;
+}
+int compile_e3_pre(CompilationEngine* self) {
+    NodeAST* node = construct_ast_node(NODE_E3,self->ast_curr,3,NULL);
+    self->ast_curr = node;
+
+    if (!CompileTerm(self)) {
+        return 0;
+    }
+    if (compileSymbol(self,"*") || compileSymbol(self,"/")) {
+        if (!CompileTerm(self)) {
+            return 0;
+        }
+    }
+    else {
+        self->jack_tokenizer->isError = 0;
+        strcpy(self->error,"");
+    }
+    self->ast_curr = self->ast_curr->parent;
+    return 1;
+}
+
 void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* self) {
     if (*errors_size > 1)
         strncat(*errors,"\n",1);

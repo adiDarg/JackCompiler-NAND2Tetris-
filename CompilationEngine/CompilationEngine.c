@@ -306,8 +306,8 @@ int CompileClassVarDec(CompilationEngine* self) {
     writeOut(self,"<classVarDec>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_CLASS_VAR_DEC,self->ast_curr,4,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_CLASS_VAR_DEC,4,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     const Keyword arr[] = {KW_STATIC,KW_FIELD};
     if (!compileKeywords(self, arr, 2)) {
@@ -334,8 +334,9 @@ int CompileSubroutineBody(CompilationEngine* self) {
     writeOut(self,"<subroutineBody>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_BODY,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_SUBROUTINE_BODY,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+
 
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (!compileSymbol(self,'{')) {
@@ -361,8 +362,9 @@ int CompileSubroutineDec(CompilationEngine* self) {
     writeOut(self,"<subroutineDec>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_DEC,self->ast_curr,7,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_SUBROUTINE_DEC,7,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+
 
     const Keyword arr[] = {KW_CONSTRUCTOR,KW_FUNCTION,KW_METHOD};
     if (!compileKeywords(self,arr,3)) {
@@ -398,8 +400,8 @@ int CompileParameterList(CompilationEngine* self) {
     writeOut(self,"<parameterList>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_PARAMETER_LIST,self->ast_curr,0,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_PARAMETER_LIST,0,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     JackTokenizer* tokenizer = self->jack_tokenizer;
     while (
@@ -427,8 +429,8 @@ int CompileVarDec(CompilationEngine* self) {
     writeOut(self,"<varDec>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_VAR_DEC,self->ast_curr,4,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_VAR_DEC,4,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_VAR)) {
         return 0;
@@ -456,8 +458,9 @@ int CompileStatements(CompilationEngine* self) {
     writeOut(self,"<statements>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_STATEMENTS,self->ast_curr,1,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_STATEMENTS,1,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
         switch (keyword(self->jack_tokenizer)) {
@@ -500,8 +503,8 @@ int CompileLet(CompilationEngine* self) {
     writeOut(self,"<letStatement>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_LET_STATEMENT,self->ast_curr,5,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_LET_STATEMENT,5,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_LET)) {
         return 0;
@@ -538,8 +541,8 @@ int CompileIf(CompilationEngine* self) {
     writeOut(self,"<ifStatement>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_IF_STATEMENT,self->ast_curr,7,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_IF_STATEMENT,7,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_IF)) {
         return 0;
@@ -582,8 +585,8 @@ int CompileWhile(CompilationEngine* self) {
     writeOut(self,"<whileStatement>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_WHILE_STATEMENT,self->ast_curr,7,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_WHILE_STATEMENT,7,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_WHILE)) {
         return 0;
@@ -615,8 +618,8 @@ int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_DO_STATEMENT,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_DO_STATEMENT,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_DO)) {
         return 0;
@@ -636,8 +639,8 @@ int CompileReturn(CompilationEngine* self) {
     writeOut(self,"<returnStatement>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_RETURN_STATEMENT,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_RETURN_STATEMENT,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compileKeyword(self,KW_RETURN)) {
         return 0;
@@ -664,8 +667,8 @@ int CompileExpression(CompilationEngine* self) {
     writeOut(self,"<expression>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_EXPRESSION,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_EXPRESSION,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compile_e1_pre(self)) {
         return 0;
@@ -683,8 +686,8 @@ int CompileExpression(CompilationEngine* self) {
     return 1;
 }
 int compile_e1_pre(CompilationEngine* self) {
-    NodeAST* node = construct_ast_node(NODE_E1,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_E1,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compile_e2_pre(self)) {
         return 0;
@@ -701,8 +704,8 @@ int compile_e1_pre(CompilationEngine* self) {
     return 1;
 }
 int compile_e2_pre(CompilationEngine* self) {
-    NodeAST* node = construct_ast_node(NODE_E2,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_E2,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compile_e3_pre(self)) {
         return 0;
@@ -718,8 +721,8 @@ int compile_e2_pre(CompilationEngine* self) {
     return 1;
 }
 int compile_e3_pre(CompilationEngine* self) {
-    NodeAST* node = construct_ast_node(NODE_E3,self->ast_curr,3,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_E3,3,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!CompileTerm(self)) {
         return 0;
@@ -760,8 +763,8 @@ int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_TERM,self->ast_curr,4,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_TERM,4,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (compileIntConstant(self)) {
         self->tab--;
@@ -810,6 +813,7 @@ int CompileTerm(CompilationEngine* self) {
             }
             self->tab--;
             writeOut(self,"</term>\n");
+            self->ast_curr = self->ast_curr->parent;
             return 1;
         }
         self->tab--;
@@ -845,8 +849,9 @@ int CompileSubroutineCall(CompilationEngine* self) {
     writeOut(self,"<subroutineCall>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_SUBROUTINE_CALL,self->ast_curr,6,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_SUBROUTINE_CALL,6,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+
     if (!compileIdentifier(self)) {
         return 0;
     }
@@ -874,8 +879,8 @@ int CompileExpressionList(CompilationEngine* self) {
     writeOut(self,"<expressionList>\n");
     self->tab++;
 
-    NodeAST* node = construct_ast_node(NODE_EXPRESSION_LIST,self->ast_curr,1,NULL,self->dt_size);
-    self->ast_curr = node;
+    ast_node(self->ast_curr,NODE_EXPRESSION_LIST,1,self->dt_size);
+    self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!isTerm(self)) {
         self->tab--;

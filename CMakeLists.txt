@@ -12,12 +12,21 @@ add_executable(JackCompiler main.c
         CompilationEngine/CompilationEngine.c
         CompilationEngine/CompilationEngine.h
         JackAnalyzer/JackAnalyzer.h
-        SymbolTable/SymbolTable.c
-        SymbolTable/SymbolTable.h
+        SemanticAnalysis/SymbolTable/SymbolTable.c
+        SemanticAnalysis/SymbolTable/SymbolTable.h
         VMWriter/VMWriter.c
         VMWriter/VMWriter.h
         CompilationEngine/Token/Token.h
         CompilationEngine/DataType.h
         CompilationEngine/Token/Token.c
         CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c
-        CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.h)
+        CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.h
+        SemanticAnalysis/SemanticAnalyzer.c
+        SemanticAnalysis/SemanticAnalyzer.h
+        SemanticAnalysis/RoutineTable/RoutineTable.c
+        SemanticAnalysis/RoutineTable/RoutineTable.h
+        SemanticAnalysis/ClassTable/ClassTable.c
+        SemanticAnalysis/ClassTable/ClassTable.h
+        SemanticAnalysis/hashingFunctions/HashingFunctions.c
+        SemanticAnalysis/hashingFunctions/HashingFunctions.h
+)

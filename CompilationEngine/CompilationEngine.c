@@ -121,7 +121,7 @@ int compileSymbol(CompilationEngine* self, char sym) {
     writeOut(self,"<symbol> ");
     const int temp = self->tab;
     self->tab = 0;
-    char str[6];
+    char str[7];
     str[0] = symbol(self->jack_tokenizer);
     str[1] = '\0';
     switch (str[0]) {
@@ -670,15 +670,13 @@ int CompileExpression(CompilationEngine* self) {
     if (!compile_e1_pre(self)) {
         return 0;
     }
-    if (compileSymbol(self,"&") || compileSymbol(self,"|")) {
+    while (compileSymbol(self,'&') || compileSymbol(self,'|')) {
         if (!compile_e1_pre(self)) {
             return 0;
         }
     }
-    else {
-        self->jack_tokenizer->isError = 0;
-        strcpy(self->error,"");
-    }
+    self->jack_tokenizer->isError = 0;
+    strcpy(self->error,"");
     self->tab--;
     writeOut(self,"</expression>\n");
     self->ast_curr = self->ast_curr->parent;
@@ -691,15 +689,14 @@ int compile_e1_pre(CompilationEngine* self) {
     if (!compile_e2_pre(self)) {
         return 0;
     }
-    if (compileSymbol(self,"<") || compileSymbol(self,">"),compileSymbol(self,"=")) {
+    while (compileSymbol(self,'<') || compileSymbol(self,'>') || compileSymbol(self,'=')) {
+        printf("Compiled symbol");
         if (!compile_e2_pre(self)) {
             return 0;
         }
     }
-    else {
-        self->jack_tokenizer->isError = 0;
-        strcpy(self->error,"");
-    }
+    self->jack_tokenizer->isError = 0;
+    strcpy(self->error,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
@@ -710,15 +707,13 @@ int compile_e2_pre(CompilationEngine* self) {
     if (!compile_e3_pre(self)) {
         return 0;
     }
-    if (compileSymbol(self,"+") || compileSymbol(self,"-")) {
+    while (compileSymbol(self,'+') || compileSymbol(self,'-')) {
         if (!compile_e3_pre(self)) {
             return 0;
         }
     }
-    else {
-        self->jack_tokenizer->isError = 0;
-        strcpy(self->error,"");
-    }
+    self->jack_tokenizer->isError = 0;
+    strcpy(self->error,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
@@ -729,15 +724,13 @@ int compile_e3_pre(CompilationEngine* self) {
     if (!CompileTerm(self)) {
         return 0;
     }
-    if (compileSymbol(self,"*") || compileSymbol(self,"/")) {
+    while (compileSymbol(self,'*') || compileSymbol(self,'/')) {
         if (!CompileTerm(self)) {
             return 0;
         }
     }
-    else {
-        self->jack_tokenizer->isError = 0;
-        strcpy(self->error,"");
-    }
+    self->jack_tokenizer->isError = 0;
+    strcpy(self->error,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
@@ -789,38 +782,36 @@ int CompileTerm(CompilationEngine* self) {
         self->ast_curr = self->ast_curr->parent;
         return 1;
     }
-    if (!compileIdentifier(self)) {
-    }
-    else if (compileSymbol(self,'[')) {
-        if (!CompileExpression(self)) {
-            return 0;
+    if (compileIdentifier(self)) {
+        if (compileSymbol(self,'[')) {
+            if (!CompileExpression(self)) {
+                return 0;
+            }
+            if (!compileSymbol(self,']')) {
+                return 0;
+            }
+            self->tab--;
+            writeOut(self,"</term>\n");
+            self->ast_curr = self->ast_curr->parent;
+            return 1;
         }
-        if (!compileSymbol(self,']')) {
-            return 0;
+        if (compileSymbol(self,'.')) {
+            if (!compileIdentifier(self)) {
+                return 0;
+            }
+            if (!compileSymbol(self,'(')) {
+                return 0;
+            }
+            if (!CompileExpressionList(self)) {
+                return 0;
+            }
+            if (!compileSymbol(self,')')) {
+                return 0;
+            }
+            self->tab--;
+            writeOut(self,"</term>\n");
+            return 1;
         }
-        self->tab--;
-        writeOut(self,"</term>\n");
-        self->ast_curr = self->ast_curr->parent;
-        return 1;
-    }
-    else if (compileSymbol(self,'.')) {
-        if (!compileIdentifier(self)) {
-            return 0;
-        }
-        if (!compileSymbol(self,'(')) {
-            return 0;
-        }
-        if (!CompileExpressionList(self)) {
-            return 0;
-        }
-        if (!compileSymbol(self,')')) {
-            return 0;
-        }
-        self->tab--;
-        writeOut(self,"</term>\n");
-        return 1;
-    }
-    else {
         self->tab--;
         writeOut(self,"</term>\n");
         self->ast_curr = self->ast_curr->parent;

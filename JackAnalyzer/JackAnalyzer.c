@@ -11,6 +11,7 @@
 #include "../VMWriter/VMWriter.h"
 
 #include "../CompilationEngine/CompilationEngine.h"
+#include "../SemanticAnalysis/SemanticAnalyzer.h"
 
 void operateOnFile(char path[],char destination[]) {
     struct stat path_stat;
@@ -32,17 +33,24 @@ void operateOnFile(char path[],char destination[]) {
             const size_t read = fread(source_code,1,fsize,fp);
             source_code[read] = '\0';
 
-            JackTokenizer *jack_tokenizer = JT_Constructor(source_code);
+            JackTokenizer *jack_tokenizer = JT_Constructor(source_code,30);
             CompilationEngine* compilation_engine = Construct_Engine(jack_tokenizer);
 
-            const int success = CompileClass(compilation_engine);
+            int success = CompileClass(compilation_engine);
             NodeAST *root = compilation_engine->ast_root;
-            //VMWriter *writer = vm_constructor(path,100);
             //Here, if success then we run semantic analysis
 
+            printf("Syntax analysis\n");
             printf(success? "Success!\n": "Fail!\n");
             printf(!success? compilation_engine->error: "");
             printf("\n");
+            if (success) {
+                SemanticData *semantic_data = construct_semantic_data(root,100,100,100,100,30);
+                success = Analyze(semantic_data);
+                printf("Semantic analysis\n");
+                printf(success? "Success!\n": "Fail!\n");
+                printf(!success? semantic_data->error: "");
+            }
 
             struct stat path_stat_dest;
             stat(destination, &path_stat_dest);

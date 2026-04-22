@@ -20,5 +20,8 @@ typedef struct SemanticData {
     size_t error_size;
     size_t dt_size;
 } SemanticData;
-
+SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
+    const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size,
+    const size_t dt_size);
+char Analyze(SemanticData *self);
 #endif //SEMANTICANALYZER_H

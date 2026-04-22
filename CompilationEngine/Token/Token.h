@@ -19,5 +19,4 @@ typedef struct Token {
     int line;
 }Token;
 Token* createToken(JackTokenizer *tokenizer);
-Token* createToken(const TokenType type,const TokenInfo info,const int line);
 #endif //TOKEN_H

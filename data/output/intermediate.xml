@@ -151,6 +151,10 @@
                   </expression>
                   <symbol> ] </symbol>
                 </term>
+                <symbol> + </symbol>
+                <term>
+                  <keyword> null </keyword>
+                </term>
               </expression>
               <symbol> ; </symbol>
             </letStatement>

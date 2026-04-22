@@ -29,8 +29,8 @@ typedef struct RoutineTable {
     size_t size;
 } RoutineTable;
 
-char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name,
-    const int nameLength, const char *type, const int typeLength);
+char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name, const int nameLength,
+    const char *type, const int typeLength, const char *class, const int classLength);
 Routine* getRoutine(const RoutineTable *self,const char *name, const int nameLength);
 RoutineTable* routine_table_constructor(const size_t tableSize);
 #endif //ROUTINETABLE_H

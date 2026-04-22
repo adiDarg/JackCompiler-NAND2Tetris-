@@ -44,11 +44,11 @@ void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
         }
     }
     Token *token = createToken(tokenizer);
-    NodeAST *node = construct_ast_node(NODE_KEYWORD,ast_curr,0,token);
+    NodeAST *node = construct_ast_node(NODE_KEYWORD,ast_curr,0,token,tokenizer->dt_size);
     ast_curr->children[ast_curr->currChildIndex] = node;
     ast_curr->currChildIndex++;
 }
-void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCount) {
+void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCount,const size_t dt_size) {
     while (ast_curr->currChildIndex >= ast_curr->childrenCount) {
         ast_curr->childrenCount *= 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount);
@@ -57,7 +57,7 @@ void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCo
             return;
         }
     }
-    NodeAST *node = construct_ast_node(type,ast_curr,childrenCount,NULL);
+    NodeAST *node = construct_ast_node(type,ast_curr,childrenCount,NULL,dt_size);
     ast_curr->children[ast_curr->currChildIndex] = node;
     ast_curr->currChildIndex++;
 }

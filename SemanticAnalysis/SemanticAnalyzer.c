@@ -30,7 +30,7 @@ void reportError(SemanticData* self,const char *error,const int line) {
     snprintf(self->error,self->error_size,"line %d: %s",line,error);
 }
 
-//Interface
+//Internal Interface - for planning
 char AnalyzeClass(SemanticData *self);
 char generalVarDec(SemanticData *self,const SymbolKind kind);
 char AnalyzeClassVarDec(SemanticData *self);
@@ -56,7 +56,9 @@ char AnalyzeExpressionList(SemanticData *self);
 
 //Helper functions
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node);
-char* type_of_node(const NodeAST *type_node,const ClassTable *class_table);
+char* type_of_node(const NodeAST *type_node,const ClassTable *class_table) {
+    return "";
+}
 char generalVarDec(SemanticData *self,const SymbolKind kind) {
     const NodeAST *node = self->current;
     const NodeAST *type_node = node->children[1];
@@ -188,10 +190,12 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
         return 0;
     }
 
-    const char* routine_name = node->children[2]->token->info.identifier;
+    const char *class = self->root->children[1]->token->info.identifier;
+    const char *routine_name = node->children[2]->token->info.identifier;
     if (!defineRoutine(self->routine_table,kind,
         routine_name,strlen(routine_name),
-        routine_type,strlen(routine_type))) {
+        routine_type,strlen(routine_type),
+        class,strlen(class))) {
         reportError(self,"Routine already defined",node->children[2]->token->line);
         return 0;
         }
@@ -426,13 +430,15 @@ char AnalyzeExpression(SemanticData *self) {
         reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
         return 0;
     }
-    self->current = node->children[2];
-    if (!AnalyzeE1(self)) {
-        return 0;
-    }
-    if (strcmp(self->current->dataType,"boolean")) {
-        reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
-        return 0;
+    for (int i = 2; i < node->currChildIndex; i+=2) {
+        self->current = node->children[i];
+        if (!AnalyzeE1(self)) {
+            return 0;
+        }
+        if (strcmp(self->current->dataType,"boolean")) {
+            reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
+            return 0;
+        }
     }
     strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;
@@ -442,7 +448,6 @@ char AnalyzeE1(SemanticData *self) {
     NodeAST *node = self->current;
     //E2 < E2 -> Boolean, E2 > E2 -> Boolean,E2=E2 -> Boolean, E2 -> Data type of E2
     NodeAST *operand1 = node->children[0];
-    NodeAST *operand2 = node->children[2];
     self->current = operand1;
     if (!AnalyzeE2(self)) {
         return 0;
@@ -452,18 +457,24 @@ char AnalyzeE1(SemanticData *self) {
         self->current = node;
         return 1;
     }
-    self->current = operand2;
-    if (!AnalyzeE2(self)) {
-        return 0;
-    }
-    const Token *operator_token = node->children[1]->token;
-    if (operand1->dataType != operand2->dataType) {
-        reportError(self,"Mismatched data types",operator_token->line);
-        return 0;
-    }
-    if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
-        reportError(self,"Expected int data type",operator_token->line);
-        return 0;
+    for (int i = 2; i < node->currChildIndex; i+=2) {
+        const Token *operator_token = node->children[i-1]->token;
+        const NodeAST *operand2 = node->children[i];
+        if (!AnalyzeE2(self)) {
+            return 0;
+        }
+        if (i == 2 && operand1->dataType != operand2->dataType) {
+            reportError(self,"Mismatched data types",operator_token->line);
+            return 0;
+        }
+        if (strcmp(operand2->dataType,"boolean")) {
+            reportError(self,"unexpected data type",operator_token->line);
+            return 0;
+        }
+        if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
+            reportError(self,"Expected int data type",operator_token->line);
+            return 0;
+        }
     }
     strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;
@@ -481,18 +492,19 @@ char AnalyzeE2(SemanticData *self) {
         self->current = node;
         return 1;
     }
-
     if (strcmp(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
-    self->current = node->children[2];
-    if (!AnalyzeE2(self)) {
-        return 0;
-    }
-    if (strcmp(self->current->dataType,"int")) {
-        reportError(self,"Expected int value for expression",node->children[1]->token->line);
-        return 0;
+    for (int i = 2; i < node->currChildIndex; i+=2) {
+        self->current = node->children[i];
+        if (!AnalyzeE2(self)) {
+            return 0;
+        }
+        if (strcmp(self->current->dataType,"int")) {
+            reportError(self,"Expected int value for expression",node->children[1]->token->line);
+            return 0;
+        }
     }
     strncpy(node->dataType,"int",self->dt_size);
     self->current = node;
@@ -515,13 +527,16 @@ char AnalyzeE3(SemanticData *self) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
-    self->current = node->children[2];
-    if (!AnalyzeTerm(self)) {
-        return 0;
-    }
-    if (strcmp(self->current->dataType,"int")) {
-        reportError(self,"Expected int value for expression",node->children[1]->token->line);
-        return 0;
+
+    for (int i = 2; i < node->currChildIndex; i+=2) {
+        self->current = node->children[i];
+        if (!AnalyzeTerm(self)) {
+            return 0;
+        }
+        if (strcmp(self->current->dataType,"int")) {
+            reportError(self,"Expected int value for expression",node->children[1]->token->line);
+            return 0;
+        }
     }
     strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;

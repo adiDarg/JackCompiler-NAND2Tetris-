@@ -133,7 +133,7 @@ char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_t
     }
 }
 
-
+//Implementations
 char Analyze(SemanticData *self) {
     return AnalyzeClass(self);
 }
@@ -624,4 +624,15 @@ char AnalyzeTerm(SemanticData *self) {
             return 0;
         }
     }
+}
+char AnalyzeExpressionList(SemanticData *self) {
+    NodeAST *node = self->current;
+    for (int i = 0; i < node->currChildIndex; i+=2) {
+        self->current = node->children[i];
+        if (!AnalyzeExpression(self)) {
+            return 0;
+        }
+    }
+    self->current = node;
+    return 1;
 }

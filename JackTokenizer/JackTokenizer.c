@@ -10,7 +10,7 @@
 
 
 
-JackTokenizer* JT_Constructor(char *source) {
+JackTokenizer* JT_Constructor(char *source,const size_t dt_size) {
     JackTokenizer *self = malloc(sizeof(JackTokenizer));
     self->source = source;
     self->cursor = source;
@@ -19,6 +19,7 @@ JackTokenizer* JT_Constructor(char *source) {
     self->error[0] = '\0';
     self->isError = 0;
     self->line = 1;
+    self->dt_size = dt_size;
     return self;
 }
 int hasMoreTokens(JackTokenizer *self) {

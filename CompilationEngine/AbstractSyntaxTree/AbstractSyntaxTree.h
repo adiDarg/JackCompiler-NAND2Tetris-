@@ -23,10 +23,10 @@ typedef struct AbstractSyntaxTreeNode {
     int currChildIndex;
     size_t childrenCount;
     Token *token;
-    DataType dataType;
+    char *dataType;
 } NodeAST;
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
-    const size_t childrenCount, Token *token);
+    const size_t childrenCount, Token *token, const size_t dt_size);
 void destory_node(NodeAST *node);
 void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr);
 void ast_node(NodeAST* ast_curr,const ASTnodeType type, const size_t childrenCount);

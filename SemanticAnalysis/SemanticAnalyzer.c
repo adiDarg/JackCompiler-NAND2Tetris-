@@ -9,87 +9,10 @@
 
 #include "RoutineTable/RoutineTable.h"
 #include "SymbolTable/SymbolTable.h"
-void getDT(SemanticData *data) {
-    const Token *token = data->current->token;
-    const SymbolTable *symbol_table = data->symbol_table;
-    const RoutineTable *routine_table = data->routine_table;
-    const ClassTable *class_table = data->class_table;
-    DataType data_type = TYPE_UNKNOWN;
-    switch (token->type) {
-        case TT_SYMBOL:
-            case TT_STRING_CONST: {
-            data_type = TYPE_CHAR;
-            break;
-        }
-        case TT_INT_CONST: {
-            data_type = TYPE_INT;
-            break;
-        }
-        case TT_KEYWORD: {
-            if (token->info.keyword == KW_TRUE || token->info.keyword == KW_FALSE) {
-                data_type = TYPE_BOOLEAN;
-            }
-            else if (token->info.keyword == KW_THIS) {
-                data_type = TYPE_OBJECT;
-            }
-            break;
-        }
-        case TT_IDENTIFIER: {
-            const char *type = typeOf(symbol_table,token->info.identifier,strlen(token->info.identifier));
-            if (strcmp(type,"int") == 0) {
-                data_type = TYPE_INT;
-            }
-            else if (strcmp(type,"char") == 0) {
-                data_type = TYPE_CHAR;
-            }
-            else if (strcmp(type,"boolean") == 0) {
-                data_type = TYPE_BOOLEAN;
-            }
-            else if (strcmp(type,"")) {
-                if (doesClassExist(class_table,type,strlen(type))) {
-                    data_type = TYPE_OBJECT;
-                }
-            }
-
-            const Routine *routine = getRoutine(routine_table,
-            token->info.identifier,strlen(token->info.identifier));
-            if (routine != NULL) {
-                type = routine->type;
-                if (strcmp(type,"int") == 0) {
-                    data_type = TYPE_INT;
-                }
-                else if (strcmp(type,"char") == 0) {
-                    data_type = TYPE_CHAR;
-                }
-                else if (strcmp(type,"boolean") == 0) {
-                    data_type = TYPE_BOOLEAN;
-                }
-                else if (strcmp(type,"void") == 0) {
-                    data_type = TYPE_VOID;
-                }
-                else if (strcmp(type,"")) {
-                    if (doesClassExist(class_table,type,strlen(type))) {
-                        data_type = TYPE_OBJECT;
-                    }
-                }
-            }
-            else {
-                data->isError = 1;
-                snprintf(data->error,data->error_size,"line %d: Undefined identifier '%s'",
-                    token->line, token->info.identifier);
-            }
-            break;
-        }
-        default: {
-            data->isError = 1;
-            snprintf(data->error,data->error_size,"line %d: Invalid type",token->line);
-        }
-    }
-    data->current->dataType = data_type;
-}
 
 SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
-    const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size) {
+    const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size,
+    const size_t dt_size) {
     SemanticData *semantic_data = malloc(sizeof(SemanticData));
     semantic_data->root = root;
     semantic_data->current = root;
@@ -99,6 +22,7 @@ SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
     semantic_data->routine_table = routine_table_constructor(routineTableSize);
     semantic_data->class_table = class_table_constructor(class_table_size);
     semantic_data->isError = 0;
+    semantic_data->dt_size = dt_size;
     return semantic_data;
 }
 void reportError(SemanticData* self,const char *error,const int line) {
@@ -166,60 +90,6 @@ SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
         return SK_FIELD;
     }
     return SK_NONE;
-}
-char* type_of_node(const NodeAST *type_node,const ClassTable *class_table) {
-    //A type can be int,char,boolean or className
-    //int,char,boolean are keyword tokens
-    //className is an identifier token
-    //Therefore: tokenType of the type node would be a typeOfType
-    const TokenType typeOfType = type_node->token->type;
-    char *typeStr = malloc(100);
-    if (typeOfType == TT_KEYWORD) {
-        //Needs to be int, char or boolean
-        const Keyword type_value = type_node->token->info.keyword;
-        switch (type_value) {
-            case KW_INT: {
-                strncpy(typeStr,"int",sizeof(typeStr));
-                break;
-            }
-            case KW_CHAR: {
-                strncpy(typeStr,"char",sizeof(typeStr));
-                break;
-            }
-            case KW_BOOLEAN: {
-                strncpy(typeStr,"boolean",sizeof(typeStr));
-                break;
-            }
-            default:
-                free(typeStr);
-                return "";
-        }
-    }
-    else if (typeOfType == TT_IDENTIFIER) {
-        const char *identifier = type_node->token->info.identifier;
-        if (!doesClassExist(class_table,identifier,strlen(identifier))) {
-            //Class is not defined
-            free(typeStr);
-            return "";
-        }
-        strncpy(typeStr,identifier,sizeof(typeStr));
-    }
-    else {
-        free(typeStr);
-        return "";
-    }
-    return typeStr;
-}
-DataType typeCharToDataType(const char *type) {
-    if (strcmp(type,"boolean") == 0) {
-        return TYPE_BOOLEAN;
-    }
-    if (strcmp(type,"int") == 0) {
-        return TYPE_INT;
-    }
-    if (strcmp(type,"char") == 0) {
-        return TYPE_CHAR;
-    }
 }
 RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node);
 char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table);
@@ -410,9 +280,9 @@ char AnalyzeLetStatement(SemanticData *self) {
 
     //datatype of variable
     self->current = node->children[1];
-    getDT(self);
-    const DataType data_type = self->current->dataType;
-    if (data_type == TYPE_UNKNOWN) {
+    const char* name = self->current->token->info.identifier;
+    const char* type = typeOf(self->symbol_table,name,strlen(name));
+    if (strcmp(type,"") == 0) {
         reportError(self,"Undefined identifier",self->current->token->line);
         return 0;
     }
@@ -424,8 +294,6 @@ char AnalyzeLetStatement(SemanticData *self) {
     //children[2] = '=' -> varName=...
     if (node->children[2]->token->info.symbol == '[') {
         //Verify variable to be of array type
-        const char *ident = node->children[1]->token->info.identifier;
-        const char *type = typeOf(self->symbol_table,ident,strlen(ident));
         if (strcmp(type,"Array")) {
             reportError(self,"Can't index non-array data type",node->children[1]->token->line);
             return 0;
@@ -435,12 +303,12 @@ char AnalyzeLetStatement(SemanticData *self) {
         if (!AnalyzeExpression(self)) {
             return 0;
         }
-        if (self->current->dataType != TYPE_INT) {
+        if (strcmp(type,"int")) {
             reportError(self,"Expected integer as index for array",node->children[1]->token->line);
             return 0;
         }
         //If array is shorter than the index -> illegal indexing
-        if (lengthOf(self->symbol_table,ident,strlen(ident)) < self->current->token->info.intVal) {
+        if (lengthOf(self->symbol_table,name,strlen(name)) < self->current->token->info.intVal) {
             reportError(self,"Index larger than array size",node->children[3]->token->line);
             return 0;
         }
@@ -456,8 +324,8 @@ char AnalyzeLetStatement(SemanticData *self) {
         return 0;
     }
 
-    if ((data_type == TYPE_OBJECT && expression_node->dataType != TYPE_INT) ||
-        expression_node->dataType != data_type) {
+    if ((strcmp(type,"Array")==0 && strcmp(expression_node->dataType,"int")) ||
+        strcmp(expression_node->dataType,type)) {
         reportError(self,"Type mismatch",node->children[1]->token->line);
         return 0;
     }
@@ -471,7 +339,7 @@ char AnalyzeIfStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-    if (self->current->dataType != TYPE_BOOLEAN) {
+    if (strcmp(self->current->dataType,"boolean")) {
         return 0;
     }
     self->current = node->children[5];
@@ -494,7 +362,7 @@ char AnalyzeWhileStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-    if (self->current->dataType != TYPE_BOOLEAN) {
+    if (strcmp(self->current->dataType,"boolean")) {
         return 0;
     }
     self->current = node->children[5];
@@ -528,60 +396,20 @@ char AnalyzeReturnStatement(SemanticData *self) {
     const char *name = subroutineDecNode->children[2]->token->info.identifier;
     const Routine *routine = getRoutine(self->routine_table,name,strlen(name));
     const char* type_routine = routine->type;
-    switch (self->current->dataType) {
-        case TYPE_INT: {
-            if (strcmp(type_routine,"int")) {
-                reportError(self,"expected int return type",self->current->token->line);
-                return 0;
-            }
-            break;
-        }
-        case TYPE_CHAR: {
-            if (strcmp(type_routine,"char")) {
-                reportError(self,"expected char return type",self->current->token->line);
-                return 0;
-            }
-            break;
-        }
-        case TYPE_OBJECT: {
-            if (self->current->token == NULL ||
-                strcmp(self->current->token->info.identifier,type_routine)) {
-                reportError(self,"expected Object return type",self->current->token->line);
-                return 0;
-            }
-            break;
-        }
-        case TYPE_BOOLEAN: {
-            if (strcmp(type_routine,"boolean")) {
-                reportError(self,"expected boolean return type",self->current->token->line);
-                return 0;
-            }
-            break;
-        }
-        case TYPE_VOID: {
-            reportError(self,"expected no return type",self->current->token->line);
-            return 0;
-        }
-        default: {
-            return 0;
-        }
+    if (strcmp(type_routine,"void") == 0) {
+        reportError(self,"Expected no return type for void function",self->current->token->line);
+        return 0;
+    }
+    if (strcmp(type_routine,self->current->dataType)) {
+        reportError(self,
+            strcat(strcat("expected ",type_routine)," return type"),
+            self->current->token->line);
+        return 0;
     }
     self->current = node;
     return 1;
 }
-char isOperatorLegal(const DataType data,const NodeAST *symbol) {
-    switch (symbol->token->info.symbol) {
-        case '+': case '-': case '*': case '/': case '<': case '>': {
-            return data == TYPE_INT;
-        }
-        case '&': case '|': {
-            return data == TYPE_BOOLEAN;
-        }
-        default: {
-            return 1;
-        }
-    }
-}
+
 char AnalyzeExpression(SemanticData *self) {
     NodeAST *node = self->current;
     //E1 & E1 -> Boolean, E1 | E1 -> Boolean, E1 -> Data type of E1
@@ -594,7 +422,7 @@ char AnalyzeExpression(SemanticData *self) {
         self->current = node;
         return 1;
     }
-    if (self->current->dataType != TYPE_BOOLEAN) {
+    if (strcmp(self->current->dataType,"boolean")) {
         reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -602,11 +430,11 @@ char AnalyzeExpression(SemanticData *self) {
     if (!AnalyzeE1(self)) {
         return 0;
     }
-    if (self->current->dataType != TYPE_BOOLEAN) {
+    if (strcmp(self->current->dataType,"boolean")) {
         reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
         return 0;
     }
-    node->dataType = TYPE_BOOLEAN;
+    strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;
     return 1;
 }
@@ -633,11 +461,11 @@ char AnalyzeE1(SemanticData *self) {
         reportError(self,"Mismatched data types",operator_token->line);
         return 0;
     }
-    if (operator_token->info.symbol != '=' && operand1->dataType != TYPE_INT) {
+    if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
         reportError(self,"Expected int data type",operator_token->line);
         return 0;
     }
-    node->dataType = TYPE_BOOLEAN;
+    strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;
     return 1;
 }
@@ -654,7 +482,7 @@ char AnalyzeE2(SemanticData *self) {
         return 1;
     }
 
-    if (self->current->dataType != TYPE_INT) {
+    if (strcmp(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -662,11 +490,11 @@ char AnalyzeE2(SemanticData *self) {
     if (!AnalyzeE2(self)) {
         return 0;
     }
-    if (self->current->dataType != TYPE_INT) {
+    if (strcmp(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
-    node->nodeType = TYPE_INT;
+    strncpy(node->dataType,"int",self->dt_size);
     self->current = node;
     return 1;
 }
@@ -683,7 +511,7 @@ char AnalyzeE3(SemanticData *self) {
         return 1;
     }
 
-    if (self->current->dataType != TYPE_INT) {
+    if (strcmp(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -691,11 +519,11 @@ char AnalyzeE3(SemanticData *self) {
     if (!AnalyzeTerm(self)) {
         return 0;
     }
-    if (self->current->dataType != TYPE_INT) {
+    if (strcmp(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
-    node->nodeType = TYPE_INT;
+    strncpy(node->dataType,"boolean",self->dt_size);
     self->current = node;
     return 1;
 }

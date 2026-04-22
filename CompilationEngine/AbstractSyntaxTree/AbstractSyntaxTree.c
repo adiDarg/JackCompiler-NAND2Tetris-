@@ -3,7 +3,7 @@
 #include <stdio.h>
 void printNode(const NodeAST* node);
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
-                            const size_t childrenCount, Token *token) {
+                            const size_t childrenCount, Token *token,const size_t dt_size) {
     NodeAST *node = malloc(sizeof(NodeAST));
     node->nodeType = nodeType;
     node->childrenCount = childrenCount;
@@ -11,6 +11,7 @@ NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
     node->parent = parent;
     node->token = token;
     node->currChildIndex = 0;
+    node->dataType = malloc(dt_size);
     return node;
 }
 void destory_node(NodeAST *node) {

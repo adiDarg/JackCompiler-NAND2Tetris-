@@ -18,6 +18,7 @@ typedef struct SemanticData {
     unsigned char isError;
     char *error;
     size_t error_size;
+    size_t dt_size;
 } SemanticData;
 
 #endif //SEMANTICANALYZER_H

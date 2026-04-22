@@ -4,6 +4,8 @@
 
 #ifndef JACKTOKENIZER_H
 #define JACKTOKENIZER_H
+#include <stddef.h>
+
 #include "Keyword/keyword.h"
 
 typedef enum {
@@ -23,10 +25,11 @@ typedef struct {
     char error[100];
     int isError;
     int line;
+    size_t dt_size;
 } JackTokenizer;
 
 
-JackTokenizer* JT_Constructor(char *source);
+JackTokenizer* JT_Constructor(char *source,const size_t dt_size);
 int hasMoreTokens(JackTokenizer *self);
 void advance(JackTokenizer *self);
 int isSymbol(char token,int len);

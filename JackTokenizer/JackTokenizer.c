@@ -121,6 +121,66 @@ void advance(JackTokenizer *self) {
         self->buffer[len] = '\0';
     }
 }
+int intValOfToken(const char *token);
+char *lookAhead(JackTokenizer *self) {
+    char *cursor_origin = self->cursor;
+    const int line_origin = self->line;
+    char *token = malloc(sizeof(self->buffer)); //By the end of the function, it will be returned, holding a string representing the current token
+    token[0] = '\0';
+    if (tokenType(self) == TT_EOF_TOKEN) {
+        return token;
+    }
+    skipWhitespace(self);
+    skipComments(self);
+    skipWhitespace(self);
+    if (isSymbol(*self->cursor,1)) {
+        token[0] = self->cursor[0];
+        token[1] = '\0';
+    }
+    else if (*self->cursor == '"') {
+        size_t len = 0;
+        do {
+            if (len >= sizeof(self->buffer) - 1) {
+                token[0] = '\0';
+                break;
+            }
+            token[len++] = *self->cursor;
+            self->cursor++;
+        }while (*self->cursor != '\0' && *self->cursor != '"');
+        if (*self->cursor == '"') {
+           token[len++] = *self->cursor;
+            token[len] = '\0';
+            self->cursor++;
+        }
+    }
+    else if (isdigit(*self->cursor)) {
+        size_t len = 0;
+        while (*self->cursor != '\0' && isdigit(*self->cursor)) {
+            token[0] = '\0';
+            if (intValOfToken(token) > 32767) {
+                token[0] = '\0';
+                break;
+            }
+            token[len++] = *self->cursor;
+            token[len] = '\0';
+            self->cursor++;
+        }
+    }
+    else {
+        size_t len = 0;
+        while (*self->cursor && !isWhitespace(*self->cursor) && !isSymbol(*self->cursor,1)) {
+            if (len >= sizeof(self->buffer) - 1) {
+                token[0] = '\0';
+                break;
+            }
+            token[len++] = *self->cursor++;
+        }
+        token[len] = '\0';
+    }
+    self->cursor = cursor_origin;
+    self->line = line_origin;
+    return token;
+}
 int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);
 int isStringConst(const char* token, int len);
@@ -216,6 +276,31 @@ char* stringVal(const JackTokenizer *self) {
         return NULL;
     }
     memcpy(res,self->buffer + 1,len - 2);
+    res[len-2] = '\0';
+    return res;
+}
+
+Keyword keywordOfToken(const char *token) {
+    Keyword out;
+    keyword_lookup(token,&out);
+    return out;
+}
+char symbolOfToken(const char *token) {
+    return *token;
+}
+char* identifierOfToken(const char *token) {
+    return strdup(token);
+}
+int intValOfToken(const char *token) {
+    return atoi(token);
+}
+char* stringValOfToken(const char *token) {
+    const size_t len = strlen(token);
+    char *res = malloc(len-1);
+    if (res == NULL) {
+        return NULL;
+    }
+    memcpy(res,token + 1,len - 2);
     res[len-2] = '\0';
     return res;
 }

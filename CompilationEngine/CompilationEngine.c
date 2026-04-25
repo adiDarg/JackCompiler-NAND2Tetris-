@@ -785,41 +785,31 @@ int CompileTerm(CompilationEngine* self) {
         self->ast_curr = self->ast_curr->parent;
         return 1;
     }
-    if (compileIdentifier(self)) {
-        if (compileSymbol(self,'[')) {
-            if (!CompileExpression(self)) {
-                return 0;
+    if (isIdentifier(self->jack_tokenizer->buffer,strlen(self->jack_tokenizer->buffer))) {
+        if (strcmp(lookAhead(self->jack_tokenizer),".") == 0) {
+            if (CompileSubroutineCall(self)) {
+                self->tab--;
+                writeOut(self,"</term>\n");
+                self->ast_curr = self->ast_curr->parent;
+                return 1;
             }
-            if (!compileSymbol(self,']')) {
-                return 0;
+            return 0;
+        }
+        if (compileIdentifier(self)) {
+            if (compileSymbol(self,'[')) {
+                if (!CompileExpression(self)) {
+                    return 0;
+                }
+                if (!compileSymbol(self,']')) {
+                    return 0;
+                }
             }
+            strcpy(self->error,"");
             self->tab--;
             writeOut(self,"</term>\n");
             self->ast_curr = self->ast_curr->parent;
             return 1;
         }
-        if (compileSymbol(self,'.')) {
-            if (!compileIdentifier(self)) {
-                return 0;
-            }
-            if (!compileSymbol(self,'(')) {
-                return 0;
-            }
-            if (!CompileExpressionList(self)) {
-                return 0;
-            }
-            if (!compileSymbol(self,')')) {
-                return 0;
-            }
-            self->tab--;
-            writeOut(self,"</term>\n");
-            self->ast_curr = self->ast_curr->parent;
-            return 1;
-        }
-        self->tab--;
-        writeOut(self,"</term>\n");
-        self->ast_curr = self->ast_curr->parent;
-        return 1;
     }
     if (compileSymbol(self,'(')) {
         if (!CompileExpression(self)) {

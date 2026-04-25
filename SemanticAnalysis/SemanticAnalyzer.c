@@ -57,15 +57,32 @@ char AnalyzeExpressionList(SemanticData *self);
 //Helper functions
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node);
 char* type_of_node(const NodeAST *type_node,const ClassTable *class_table) {
-    return "";
+    //int, char, boolean
+    if (type_node->token->type == TT_KEYWORD) {
+        switch (type_node->token->info.keyword) {
+            case KW_INT:
+                return "int";
+            case KW_BOOLEAN:
+                return "boolean";
+            case KW_CHAR:
+                return "char";
+            default:
+                return "";
+        }
+    }
+    //If not primitive -> type is identifier of a class
+    char *type = type_node->token->info.identifier;
+    if (!doesClassExist(class_table,type)) {
+        return "";
+    }
+    return type;
 }
 char generalVarDec(SemanticData *self,const SymbolKind kind) {
     const NodeAST *node = self->current;
     const NodeAST *type_node = node->children[1];
     char* typeStr = type_of_node(type_node,self->class_table);
-    if (typeStr == "") {
+     if (typeStr == "") {
         reportError(self,"invalid type for variable",type_node->token->line);
-        free(typeStr);
         return 0;
     }
 
@@ -76,11 +93,9 @@ char generalVarDec(SemanticData *self,const SymbolKind kind) {
             typeStr,strlen(typeStr),kind);
         if (!result) {
             reportError(self,"variable is already defined",varName->token->line);
-            free(typeStr);
             return 0;
         }
     }
-    free(typeStr);
     return 1;
 }
 SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
@@ -111,7 +126,7 @@ RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node) {
 char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table) {
     if (routine_type_node->token->type == TT_IDENTIFIER) {
         char *class = routine_type_node->token->info.identifier;
-        if (doesClassExist(class_table,class,strlen(class))) {
+        if (doesClassExist(class_table,class)) {
             return class;
         }
         return "";
@@ -141,28 +156,23 @@ char Analyze(SemanticData *self) {
 }
 char AnalyzeClass(SemanticData *self) {
     NodeAST* node = self->current;
-    char result = 1;
-    for (int i = 0; i < node->currChildIndex; i++) {
-        NodeAST *child = node->children[i];
-        if (child == NULL) {
-            continue;
+    const char *class = node->children[1]->token->info.identifier;
+    defineClass(self->class_table,class);
+    for (int i = 3; i < node->currChildIndex; i++) {
+        self->current = node->children[i];
+        if (self->current->nodeType == NODE_CLASS_VAR_DEC) {
+            if (!AnalyzeClassVarDec(self)) {
+                return 0;
+            }
         }
-        if (child->nodeType == NODE_IDENTIFIER) {
-            defineClass(self->class_table,child->token->info.identifier,
-                strlen(child->token->info.identifier));
-        }
-        else if (child->nodeType == NODE_CLASS_VAR_DEC) {
-            self->current = child;
-            result = 1 & AnalyzeClassVarDec(self);
-            self->current = node;
-        }
-        else if (child->nodeType == NODE_SUBROUTINE_DEC) {
-            self->current = child;
-            result = 1 & AnalyzeSubRoutineDec(self);
-            self->current = node;
+        else if (self->current->nodeType == NODE_SUBROUTINE_DEC) {
+            if (!AnalyzeSubRoutineDec(self)) {
+                return 0;
+            }
         }
     }
-    return result;
+    self->current = node;
+    return 1;
 }
 char AnalyzeClassVarDec(SemanticData *self) {
     const NodeAST* node = self->current;
@@ -184,7 +194,7 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
     }
 
     const NodeAST *routine_type_node = node->children[1];
-    const char* routine_type = getRoutineType(routine_kind_node,self->class_table);
+    const char* routine_type = getRoutineType(routine_type_node,self->class_table);
     if (routine_type == "") {
         reportError(self,"Invalid routine type",routine_type_node->token->line);
         return 0;
@@ -192,19 +202,16 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
 
     const char *class = self->root->children[1]->token->info.identifier;
     const char *routine_name = node->children[2]->token->info.identifier;
-    if (!defineRoutine(self->routine_table,kind,
-        routine_name,strlen(routine_name),
-        routine_type,strlen(routine_type),
-        class,strlen(class))) {
+    if (!defineRoutine(self->routine_table,kind,routine_name,routine_type,class)) {
         reportError(self,"Routine already defined",node->children[2]->token->line);
         return 0;
         }
 
-    self->current = node->children[5];
+    self->current = node->children[4];
     if (!AnalyzeParameterList(self)) {
         return 0;
     }
-    self->current = node->children[7];
+    self->current = node->children[6];
     if (!AnalyzeSubroutineBody(self)) {
         return 0;
     }
@@ -307,7 +314,7 @@ char AnalyzeLetStatement(SemanticData *self) {
         if (!AnalyzeExpression(self)) {
             return 0;
         }
-        if (strcmp(type,"int")) {
+        if (strcmp(self->current->dataType,"int")) {
             reportError(self,"Expected integer as index for array",node->children[1]->token->line);
             return 0;
         }
@@ -327,9 +334,14 @@ char AnalyzeLetStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-
-    if ((strcmp(type,"Array")==0 && strcmp(expression_node->dataType,"int")) ||
-        strcmp(expression_node->dataType,type)) {
+    //First condition: if data type is null then we can't have a type mismatch
+    //Second condition: if we are writing into an indexed(expressionIndex == 6) Array type,
+    //then the expression data type must be an int
+    //Third condition: if data types are different we have a type mismatch
+    //if not null AND (indexed Array not getting int OR different type names) -> Error
+    if (strcmp(type,"null") &&
+        ((strcmp(type,"Array")==0 && expressionIndex == 6 && strcmp(expression_node->dataType,"int")) ||
+        strcmp(expression_node->dataType,type))) {
         reportError(self,"Type mismatch",node->children[1]->token->line);
         return 0;
     }
@@ -367,6 +379,7 @@ char AnalyzeWhileStatement(SemanticData *self) {
         return 0;
     }
     if (strcmp(self->current->dataType,"boolean")) {
+        reportError(self,"Expected expression to be boolean",node->children[0]->token->line);
         return 0;
     }
     self->current = node->children[5];
@@ -398,7 +411,8 @@ char AnalyzeReturnStatement(SemanticData *self) {
     //parent^4 = subroutineDec
     const NodeAST *subroutineDecNode = node->parent->parent->parent->parent;
     const char *name = subroutineDecNode->children[2]->token->info.identifier;
-    const Routine *routine = getRoutine(self->routine_table,name,strlen(name));
+    const char *class = self->root->children[1]->token->info.identifier;
+    const Routine *routine = getRoutine(self->routine_table,name,class);
     const char* type_routine = routine->type;
     if (strcmp(type_routine,"void") == 0) {
         reportError(self,"Expected no return type for void function",self->current->token->line);
@@ -453,26 +467,30 @@ char AnalyzeE1(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        node->dataType = self->current->dataType;
+        strncpy(node->dataType,self->current->dataType,self->dt_size);
         self->current = node;
         return 1;
     }
     for (int i = 2; i < node->currChildIndex; i+=2) {
         const Token *operator_token = node->children[i-1]->token;
-        const NodeAST *operand2 = node->children[i];
+        NodeAST *operand2 = node->children[i];
+        self->current = operand2;
         if (!AnalyzeE2(self)) {
             return 0;
         }
-        if (i == 2 && operand1->dataType != operand2->dataType) {
-            reportError(self,"Mismatched data types",operator_token->line);
-            return 0;
+        if (i == 2) {
+            if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
+                reportError(self,"Expected int data type",operator_token->line);
+                return 0;
+            }
+            if (strcmp(operand1->dataType,operand2->dataType)) {
+                reportError(self,"Mismatched data types",operator_token->line);
+                return 0;
+            }
+            continue;
         }
         if (strcmp(operand2->dataType,"boolean")) {
             reportError(self,"unexpected data type",operator_token->line);
-            return 0;
-        }
-        if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
-            reportError(self,"Expected int data type",operator_token->line);
             return 0;
         }
     }
@@ -488,7 +506,7 @@ char AnalyzeE2(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        node->dataType = self->current->dataType;
+        strncpy(node->dataType,self->current->dataType,self->dt_size);
         self->current = node;
         return 1;
     }
@@ -518,7 +536,7 @@ char AnalyzeE3(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        node->dataType = self->current->dataType;
+        strncpy(node->dataType,self->current->dataType,self->dt_size);
         self->current = node;
         return 1;
     }
@@ -558,9 +576,14 @@ char AnalyzeSubroutineCall(SemanticData *self) {
     }
     else {
         const Token *ident_token = node->children[0]->token;
-        const char *ident = ident_token->info.identifier;
+        char *ident = ident_token->info.identifier;
         line = ident_token->line;
         class = typeOf(self->symbol_table,ident,strlen(ident));
+        if (strcmp(class,"") == 0) {
+            if (doesClassExist(self->class_table,ident)) {
+                class = ident;
+            }
+        }
         subroutine_name = node->children[2]->token->info.identifier;
         expression_list = node->children[4];
     }
@@ -568,18 +591,16 @@ char AnalyzeSubroutineCall(SemanticData *self) {
         reportError(self,"Undefined variable",line);
         return 0;
     }
-    const Routine *routine = getRoutine(self->routine_table,subroutine_name,strlen(subroutine_name));
+    const Routine *routine = getRoutine(self->routine_table,subroutine_name,class);
     if (routine == NULL) {
         reportError(self,"Undefined routine called",line);
         return 0;
-    }
-    if (strcmp(routine->class,class)) {
-        reportError(self,"Routine can't be called from this class",line);
     }
     self->current = expression_list;
     if (!AnalyzeExpressionList(self)) {
         return 0;
     }
+    strncpy(node->dataType,routine->type,self->dt_size);
     self->current = node;
     return 1;
 }
@@ -597,21 +618,55 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_SUBROUTINE_CALL: {
             self->current = node->children[0];
             const char res = AnalyzeSubroutineCall(self);
-            node->dataType = self->current->dataType;
+            strncpy(node->dataType, self->current->dataType,self->dt_size);
             self->current = node;
             return res;
         }
 
-        case NODE_INTEGER_CONSTANT: case NODE_STRING_CONSTANT: case NODE_KEYWORD_CONSTANT: {
+        case NODE_INTEGER_CONSTANT: {
+            strncpy(node->dataType,"int",self->dt_size);
             return 1;
+        }
+        case NODE_STRING_CONSTANT: {
+            strncpy(node->dataType,"char",self->dt_size);
+            return 1;
+        }
+        case NODE_KEYWORD_CONSTANT: {
+            const Keyword keyword = node->children[0]->token->info.keyword;
+            switch (keyword) {
+                case KW_TRUE: case KW_FALSE: {
+                    strncpy(node->dataType,"boolean",self->dt_size);
+                    return 1;
+                }
+                case KW_NULL: {
+                    strncpy(node->dataType,"null",self->dt_size);
+                    return 1;
+                }
+                case KW_THIS: {
+                    strncpy(node->dataType,self->root->children[1]->token->info.identifier,self->dt_size);
+                    return 1;
+                }
+                default: {
+                    return 0;
+                }
+            }
         }
 
         case NODE_IDENTIFIER: {
             const char *name = node->children[0]->token->info.identifier;
             const char *ident_type = typeOf(self->symbol_table,name,strlen(name));
-            if (strcmp(ident_type,"") == 0) {
-                reportError(self,"Undefined variable",node->children[0]->token->line);
+            //Could be an object instance -> symbol table, or static function call -> className
+            const char isClass = doesClassExist(self->class_table,name);
+            const char isVar = strcmp(ident_type,"") != 0;
+            if (!isVar && !isClass) {
+                reportError(self,"Undefined variable or class",node->children[0]->token->line);
                 return 0;
+            }
+            if (isVar) {
+                strncpy(node->dataType,ident_type,self->dt_size);
+            }
+            else {
+                strncpy(node->dataType,name,self->dt_size);
             }
 
             if (node->currChildIndex > 1) {

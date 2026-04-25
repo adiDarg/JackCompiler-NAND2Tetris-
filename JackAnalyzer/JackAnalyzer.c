@@ -50,6 +50,8 @@ void operateOnFile(char path[],char destination[]) {
                 printf("Semantic analysis\n");
                 printf(success? "Success!\n": "Fail!\n");
                 printf(!success? semantic_data->error: "");
+                printf("\n");
+                return;
             }
 
             struct stat path_stat_dest;

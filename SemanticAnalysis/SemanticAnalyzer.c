@@ -318,11 +318,7 @@ char AnalyzeLetStatement(SemanticData *self) {
             reportError(self,"Expected integer as index for array",node->children[1]->token->line);
             return 0;
         }
-        //If array is shorter than the index -> illegal indexing
-        if (lengthOf(self->symbol_table,name,strlen(name)) < self->current->token->info.intVal) {
-            reportError(self,"Index larger than array size",node->children[3]->token->line);
-            return 0;
-        }
+        //TODO: If array is shorter than the index -> illegal indexing
         self->current = node;
         expressionIndex = 6;
     }
@@ -337,11 +333,10 @@ char AnalyzeLetStatement(SemanticData *self) {
     //First condition: if data type is null then we can't have a type mismatch
     //Second condition: if we are writing into an indexed(expressionIndex == 6) Array type,
     //then the expression data type must be an int
-    //Third condition: if data types are different we have a type mismatch
-    //if not null AND (indexed Array not getting int OR different type names) -> Error
+    //Third condition: if data types are different, and it's not an indexed array, we have a type mismatch
     if (strcmp(type,"null") &&
         ((strcmp(type,"Array")==0 && expressionIndex == 6 && strcmp(expression_node->dataType,"int")) ||
-        strcmp(expression_node->dataType,type))) {
+        (strcmp(expression_node->dataType,type) && expressionIndex != 6))) {
         reportError(self,"Type mismatch",node->children[1]->token->line);
         return 0;
     }
@@ -391,6 +386,7 @@ char AnalyzeWhileStatement(SemanticData *self) {
 }
 char AnalyzeDoStatement(SemanticData *self) {
     NodeAST *node = self->current;
+    self->current = node->children[1];
     if (!AnalyzeSubroutineCall(self)) {
         return 0;
     }
@@ -399,6 +395,9 @@ char AnalyzeDoStatement(SemanticData *self) {
 }
 char AnalyzeReturnStatement(SemanticData *self) {
     NodeAST *node = self->current;
+    if (node->currChildIndex == 2) {
+        return 1;
+    }
     self->current = node->children[1];
     if (!AnalyzeExpression(self)) {
         return 0;
@@ -516,7 +515,7 @@ char AnalyzeE2(SemanticData *self) {
     }
     for (int i = 2; i < node->currChildIndex; i+=2) {
         self->current = node->children[i];
-        if (!AnalyzeE2(self)) {
+        if (!AnalyzeE3(self)) {
             return 0;
         }
         if (strcmp(self->current->dataType,"int")) {
@@ -631,7 +630,7 @@ char AnalyzeTerm(SemanticData *self) {
             strncpy(node->dataType,"char",self->dt_size);
             return 1;
         }
-        case NODE_KEYWORD_CONSTANT: {
+        case NODE_KEYWORD: {
             const Keyword keyword = node->children[0]->token->info.keyword;
             switch (keyword) {
                 case KW_TRUE: case KW_FALSE: {

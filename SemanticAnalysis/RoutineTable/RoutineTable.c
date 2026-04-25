@@ -19,20 +19,18 @@ RoutineTable* routine_table_constructor(const size_t tableSize) {
     addStandardLibRoutines(table);
     return table;
 }
-char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name, const int nameLength,
-    const char *type, const int typeLength, const char *class, const int classLength) {
+char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name,
+    const char *type, const char *class) {
     Routine *routine = malloc(sizeof(Routine));
     routine->kind = kind;
-    routine->name = malloc(nameLength);
-    strncpy(routine->name,name,nameLength);
-    routine->type = malloc(typeLength);
-    strncpy(routine->type,type,typeLength);
-    routine->class = malloc(classLength);
-    strncpy(routine->class,class,classLength);
-    const int hashValue = fnv1a_hash(name,nameLength) % self->size;
+    routine->name = strdup(name);
+    routine->type = strdup(type);
+    routine->class = strdup(class);
+    const int hashValue = fnv1a_hash(name,strlen(name)) % self->size;
     RoutineList **listPtr = &self->routines[hashValue];
     while (*listPtr != NULL) {
-        if (strcmp((*listPtr)->routine->name,name) == 0) {
+        if (strcmp((*listPtr)->routine->name, name) == 0 &&
+            strcmp((*listPtr)->routine->class, class) == 0) {
             return 0;
         }
         listPtr = &((*listPtr)->next);
@@ -42,11 +40,12 @@ char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *
     (*listPtr)->next = NULL;
     return 1;
 }
-Routine* getRoutine(const RoutineTable *self,const char *name, const int nameLength) {
-    const int hashVal = fnv1a_hash(name,nameLength);
+Routine* getRoutine(const RoutineTable *self,const char *name, const char *class) {
+    const int hashVal = fnv1a_hash(name,strlen(name)) % self->size;
     const RoutineList *list = self->routines[hashVal];
     while (list != NULL) {
-        if (strcmp(list->routine->name,name) == 0) {
+        if (strcmp(list->routine->name,name) == 0 &&
+            strcmp(list->routine->class,class) == 0) {
             return list->routine;
         }
         list = list->next;
@@ -57,11 +56,11 @@ Routine* getRoutine(const RoutineTable *self,const char *name, const int nameLen
 
 typedef struct {
     RoutineKind kind;
-    char *name; int nameLen;
-    char *type; int typeLen;
-    char *class; int classLen;
+    char *name;
+    char *type;
+    char *class;
 } OSroutine;
-#define ROUTINE_ENTRY(k,n,t,c) { k, n, sizeof(n) - 1, t, sizeof(t) - 1, c, sizeof(c) - 1 }
+#define ROUTINE_ENTRY(k,n,t,c) { k, n, t, c,}
 void addStandardLibRoutines(const RoutineTable *self) {
     static const OSroutine routines[] = {
         //Math
@@ -131,8 +130,8 @@ void addStandardLibRoutines(const RoutineTable *self) {
     };
     for (int i = 0; i < sizeof(routines) / sizeof(OSroutine); i++) {
         defineRoutine(self,routines[i].kind,
-            routines[i].name,routines[i].nameLen,
-            routines[i].type,routines[i].typeLen,
-            routines[i].class,routines[i].classLen);
+            routines[i].name,
+            routines[i].type,
+            routines[i].class);
     }
 }

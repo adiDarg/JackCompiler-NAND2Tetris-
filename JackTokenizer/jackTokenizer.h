@@ -19,13 +19,13 @@ typedef enum {
 } TokenType ;
 
 typedef struct {
-    char *source;
-    char *cursor;
-    char buffer[100];
-    char error[100];
-    int isError;
-    int line;
-    size_t dt_size;
+    char buffer[100]; //100
+    char error[100]; //100
+    char *source; //8
+    char *cursor; //8
+    size_t dt_size; //8
+    int isError; //4
+    int line; //4
 } JackTokenizer;
 
 

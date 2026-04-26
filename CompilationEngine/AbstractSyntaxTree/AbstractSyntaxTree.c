@@ -72,8 +72,9 @@ void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
         ast_curr->childrenCount *= 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
-            printf("Unable to allocate children for AST");
-            return;
+            printf("Unable to allocate children for AST\n");
+            printf("Line: %d\n",tokenizer->line);
+            exit(EXIT_FAILURE);
         }
     }
     Token *token = createToken(tokenizer);
@@ -88,8 +89,11 @@ void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCo
         ast_curr->childrenCount *= 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
-            printf("Unable to allocate children for AST");
-            return;
+            printf("Unable to allocate children for AST\n");
+            if (ast_curr->token != NULL) {
+                printf("Line: %d\n",ast_curr->token->line);
+            }
+            exit(EXIT_FAILURE);
         }
     }
     NodeAST *node = construct_ast_node(type,ast_curr,childrenCount,NULL,dt_size);

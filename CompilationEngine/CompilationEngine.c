@@ -693,7 +693,6 @@ int compile_e1_pre(CompilationEngine* self) {
         return 0;
     }
     while (compileSymbol(self,'<') || compileSymbol(self,'>') || compileSymbol(self,'=')) {
-        printf("Compiled symbol");
         if (!compile_e2_pre(self)) {
             return 0;
         }

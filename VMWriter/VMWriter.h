@@ -18,7 +18,7 @@ enum Command {
     CMD_AND, CMD_OR, CMD_NOT
 } typedef Command;
 typedef struct {
-    FILE* fptr;
+    FILE* fptr; //8
 } VMWriter;
 VMWriter* vm_constructor(const char pathStr[],const int strLength);
 void writePop(const VMWriter *self, const Segment segment, const int index);

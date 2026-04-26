@@ -10,15 +10,15 @@
 #include "SymbolTable/SymbolTable.h"
 
 typedef struct SemanticData {
-    NodeAST *root;
-    NodeAST *current;
-    SymbolTable *symbol_table;
-    RoutineTable *routine_table;
-    ClassTable *class_table;
-    unsigned char isError;
-    char *error;
-    size_t error_size;
-    size_t dt_size;
+    NodeAST *root; //8
+    NodeAST *current; //8
+    SymbolTable *symbol_table; //8
+    RoutineTable *routine_table; //8
+    ClassTable *class_table; //8
+    char *error; //8
+    size_t error_size; //8
+    size_t dt_size; //8
+    unsigned char isError; //1
 } SemanticData;
 SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
     const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size,

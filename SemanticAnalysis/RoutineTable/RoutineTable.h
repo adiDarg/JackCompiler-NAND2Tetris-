@@ -13,20 +13,20 @@ typedef enum RoutineKind {
 } RoutineKind;
 
 struct RoutineValue {
-    RoutineKind kind;
-    char *class;
-    char *name;
-    char *type;
+    char *class; //8
+    char *name; //8
+    char *type; //8
+    RoutineKind kind; //4
 } typedef Routine;
 
 struct RoutineList {
-    Routine *routine;
-    struct RoutineList* next;
+    Routine *routine; //8
+    struct RoutineList* next; //8
 }typedef RoutineList;
 
 typedef struct RoutineTable {
-    RoutineList **routines;
-    size_t size;
+    RoutineList **routines; //8
+    size_t size; //8
 } RoutineTable;
 
 char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name,

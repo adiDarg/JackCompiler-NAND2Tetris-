@@ -6,7 +6,7 @@
 #define TOKEN_H
 #include "../../JackTokenizer/Keyword/keyword.h"
 #include "../../JackTokenizer/jackTokenizer.h"
-typedef union TokenInfo {
+typedef union TokenInfo { //8
     Keyword keyword;
     char symbol;
     char *identifier;
@@ -14,9 +14,9 @@ typedef union TokenInfo {
     char *stringVal;
 } TokenInfo;
 typedef struct Token {
-    TokenType type;
-    TokenInfo info;
-    int line;
+    TokenInfo info; //8
+    int line; //4
+    TokenType type; //3 bits - 4 bytes
 }Token;
 Token* createToken(JackTokenizer *tokenizer);
 #endif //TOKEN_H

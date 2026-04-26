@@ -7,15 +7,16 @@
 #include "../JackTokenizer/jackTokenizer.h"
 #include "AbstractSyntaxTree/AbstractSyntaxTree.h"
 typedef struct {
-    JackTokenizer* jack_tokenizer;
-    char *out;
-    NodeAST *ast_root; //Abstract Syntax Tree root and current nodes
-    NodeAST *ast_curr;
-    size_t len;
-    size_t cap;
-    char error[100];
-    int tab;
-    size_t dt_size;
+    char error[100]; //100
+    JackTokenizer* jack_tokenizer; //8
+    char *out; //8
+    //Abstract Syntax Tree root and current nodes
+    NodeAST *ast_root; //8
+    NodeAST *ast_curr; //8
+    size_t len; //8
+    size_t cap; //8
+    size_t dt_size; //8
+    int tab; //4
 }CompilationEngine;
 CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer);
 int CompileClass(CompilationEngine *self);

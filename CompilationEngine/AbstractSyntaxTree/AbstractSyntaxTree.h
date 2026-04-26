@@ -17,13 +17,13 @@ typedef enum ASTnodeType {
     NODE_STRING_CONSTANT, NODE_IDENTIFIER, NODE_EOF_TOKEN, NODE_UNKNOWN
 } ASTnodeType;
 typedef struct AbstractSyntaxTreeNode {
-    ASTnodeType nodeType;
-    struct AbstractSyntaxTreeNode *parent;
-    struct AbstractSyntaxTreeNode **children;
-    int currChildIndex;
-    size_t childrenCount;
-    Token *token;
-    char *dataType;
+    struct AbstractSyntaxTreeNode *parent; //8
+    struct AbstractSyntaxTreeNode **children; //8
+    Token *token; //8
+    size_t childrenCount; //8
+    char *dataType; //8
+    int currChildIndex; //4
+    ASTnodeType nodeType; //5 bits - 4 bytes
 } NodeAST;
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
     const size_t childrenCount, Token *token, const size_t dt_size);

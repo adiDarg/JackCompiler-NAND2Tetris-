@@ -32,7 +32,6 @@ SymbolList** getScope(const SymbolTable* self,const SymbolKind kind) {
 }
 
 void startSubroutine(const SymbolTable *self) {
-    printf("subroutine");
     for (int i = 0; i < self->size; i++) {
         self->subroutineScope[i] = NULL;
     }
@@ -52,7 +51,7 @@ char addSymbolToTable(const SymbolTable *self,const SymbolKind kind, const int h
     (*listPtr)->next = NULL;
     return 1;
 }
-char define(SymbolTable* self, char name[],const int nameLength, char type[],const int typeLength, const SymbolKind kind) {
+char define(SymbolTable *self, char name[],const int nameLength, char type[],const int typeLength, const SymbolKind kind) {
     //Initialize symbol for symbol table - saves info of identifier
     Symbol *symbol = malloc(sizeof(Symbol));
     symbol->kind = kind;
@@ -60,6 +59,8 @@ char define(SymbolTable* self, char name[],const int nameLength, char type[],con
     symbol->type = malloc(typeLength);
     strcpy(symbol->name,name);
     strcpy(symbol->type,type);
+    symbol->array_member_type = malloc(1);
+    strcpy(symbol->array_member_type,"");
     switch (kind) {
         case SK_FIELD: {
             symbol->index = self->fieldIndex;
@@ -89,6 +90,29 @@ char define(SymbolTable* self, char name[],const int nameLength, char type[],con
     const int hashVal = fnv1a_hash(name,nameLength) % self->size;
     //Assign memory based on scope in hashtable + linkedlist structure
     return addSymbolToTable(self,kind,hashVal,symbol);
+}
+void defineArrayMemberType(const SymbolTable *self,const char *name, const int nameLength, const char *arrayMemberType, const int member_length) {
+    const int hashVal = fnv1a_hash(name,nameLength) % self->size;
+    const SymbolList* list = self->subroutineScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            list->symbol->array_member_type = malloc(member_length + 1);
+            strncpy(list->symbol->array_member_type,arrayMemberType,member_length);
+            list->symbol->array_member_type[member_length] = '\0';
+            return;
+        }
+        list = list->next;
+    }
+    list = self->classScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            list->symbol->array_member_type = malloc(member_length + 1);
+            strncpy(list->symbol->array_member_type,arrayMemberType,member_length);
+            list->symbol->array_member_type[member_length] = '\0';
+            return;
+        }
+        list = list->next;
+    }
 }
 int varCount(const SymbolTable *self,const SymbolKind kind) {
     switch (kind) {
@@ -135,6 +159,24 @@ char* typeOf(const SymbolTable *self,const char name[], const int length) {
     while (list != NULL) {
         if (strcmp(list->symbol->name,name) == 0) {
             return list->symbol->type;
+        }
+        list = list->next;
+    }
+    return "";
+}
+char* memberTypeOf(const SymbolTable* self,const char name[], const int length) {
+    const int hashVal = fnv1a_hash(name,length) % self->size;
+    const SymbolList* list = self->subroutineScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->array_member_type;
+        }
+        list = list->next;
+    }
+    list = self->classScope[hashVal];
+    while (list != NULL) {
+        if (strcmp(list->symbol->name,name) == 0) {
+            return list->symbol->array_member_type;
         }
         list = list->next;
     }

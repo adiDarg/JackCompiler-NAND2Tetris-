@@ -16,6 +16,7 @@ struct SymbolValue {
     int index;
     char *name;
     char *type;
+    char *array_member_type;
     int arrayLength;
 } typedef Symbol;
 struct SymbolList {
@@ -36,9 +37,11 @@ struct SymbolTable {
 SymbolTable* symbol_table_constructor(const int tableSize);
 void startSubroutine(const SymbolTable *self);
 char define(SymbolTable* self,char name[],const int nameLength, char type[],const int typeLength, SymbolKind kind);
+void defineArrayMemberType(const SymbolTable *self,const char *name, const int nameLength, const char *arrayMemberType, const int member_length);
 int varCount(const SymbolTable* self, SymbolKind kind);
 SymbolKind kindOf(const SymbolTable* self,const char name[], const int length);
 char* typeOf(const SymbolTable* self,const char name[], const int length);
+char* memberTypeOf(const SymbolTable* self,const char name[], const int length);
 int indexOf(const SymbolTable* self,const char name[], const int length);
 int lengthOf(const SymbolTable* self,const char name[], const int length);
 #endif //SYMBOLTABLE_H

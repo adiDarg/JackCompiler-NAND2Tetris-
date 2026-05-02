@@ -91,29 +91,6 @@ char define(SymbolTable *self, char name[],const int nameLength, char type[],con
     //Assign memory based on scope in hashtable + linkedlist structure
     return addSymbolToTable(self,kind,hashVal,symbol);
 }
-void defineArrayMemberType(const SymbolTable *self,const char *name, const int nameLength, const char *arrayMemberType, const int member_length) {
-    const int hashVal = fnv1a_hash(name,nameLength) % self->size;
-    const SymbolList* list = self->subroutineScope[hashVal];
-    while (list != NULL) {
-        if (strcmp(list->symbol->name,name) == 0) {
-            list->symbol->array_member_type = malloc(member_length + 1);
-            strncpy(list->symbol->array_member_type,arrayMemberType,member_length);
-            list->symbol->array_member_type[member_length] = '\0';
-            return;
-        }
-        list = list->next;
-    }
-    list = self->classScope[hashVal];
-    while (list != NULL) {
-        if (strcmp(list->symbol->name,name) == 0) {
-            list->symbol->array_member_type = malloc(member_length + 1);
-            strncpy(list->symbol->array_member_type,arrayMemberType,member_length);
-            list->symbol->array_member_type[member_length] = '\0';
-            return;
-        }
-        list = list->next;
-    }
-}
 int varCount(const SymbolTable *self,const SymbolKind kind) {
     switch (kind) {
         case SK_FIELD:
@@ -159,24 +136,6 @@ char* typeOf(const SymbolTable *self,const char name[], const int length) {
     while (list != NULL) {
         if (strcmp(list->symbol->name,name) == 0) {
             return list->symbol->type;
-        }
-        list = list->next;
-    }
-    return "";
-}
-char* memberTypeOf(const SymbolTable* self,const char name[], const int length) {
-    const int hashVal = fnv1a_hash(name,length) % self->size;
-    const SymbolList* list = self->subroutineScope[hashVal];
-    while (list != NULL) {
-        if (strcmp(list->symbol->name,name) == 0) {
-            return list->symbol->array_member_type;
-        }
-        list = list->next;
-    }
-    list = self->classScope[hashVal];
-    while (list != NULL) {
-        if (strcmp(list->symbol->name,name) == 0) {
-            return list->symbol->array_member_type;
         }
         list = list->next;
     }

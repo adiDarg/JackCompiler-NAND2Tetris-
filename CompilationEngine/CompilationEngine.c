@@ -400,7 +400,7 @@ int CompileParameterList(CompilationEngine* self) {
     writeOut(self,"<parameterList>\n");
     self->tab++;
 
-    ast_node(self->ast_curr,NODE_PARAMETER_LIST,0,self->dt_size);
+    ast_node(self->ast_curr,NODE_PARAMETER_LIST,1,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     JackTokenizer* tokenizer = self->jack_tokenizer;
@@ -874,6 +874,7 @@ int CompileExpressionList(CompilationEngine* self) {
     if (!isTerm(self)) {
         self->tab--;
         writeOut(self,"</expressionList>\n");
+        self->ast_curr = self->ast_curr->parent;
         return 1;
     }
     int first = 1;

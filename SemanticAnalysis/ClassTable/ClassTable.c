@@ -26,7 +26,7 @@ char defineClass(const ClassTable *self,const char *name) {
         if (strcmp((*listPtr)->name,name) == 0) {
             return 0;
         }
-        listPtr = &((*listPtr)->next);
+        listPtr = &(*listPtr)->next;
     }
     *listPtr = malloc(sizeof(ClassList));
     if (*listPtr == NULL) return 0;
@@ -41,7 +41,7 @@ char doesClassExist(const ClassTable *self,const char *name) {
         if (strcmp((*listPtr)->name,name) == 0) {
             return 1;
         }
-        *listPtr = (*listPtr)->next;
+        listPtr = &(*listPtr)->next;
     }
     return 0;
 }

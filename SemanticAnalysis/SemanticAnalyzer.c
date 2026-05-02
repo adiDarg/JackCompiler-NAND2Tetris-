@@ -149,6 +149,18 @@ char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_t
         }
     }
 }
+char areDataTypesCompatible(const char *type1,const char *type2) {
+    if (strcmp(type1,"null") == 0) {
+        return 1;
+    }
+    if (strcmp(type2,"null") == 0) {
+        return 1;
+    }
+    if (strcmp(type1,type2) == 0) {
+        return 1;
+    }
+    return 0;
+}
 
 //Implementations
 char Analyze(SemanticData *self) {
@@ -185,6 +197,7 @@ char AnalyzeClassVarDec(SemanticData *self) {
     return generalVarDec(self,kind);
 }
 char AnalyzeSubRoutineDec(SemanticData *self) {
+    startSubroutine(self->symbol_table);
     NodeAST *node = self->current;
     const NodeAST *routine_kind_node = node->children[0];
     const RoutineKind kind = getRoutineKindOfNode(routine_kind_node);
@@ -314,7 +327,7 @@ char AnalyzeLetStatement(SemanticData *self) {
         if (!AnalyzeExpression(self)) {
             return 0;
         }
-        if (strcmp(self->current->dataType,"int")) {
+        if (!areDataTypesCompatible(self->current->dataType,"int")) {
             reportError(self,"Expected integer as index for array",node->children[1]->token->line);
             return 0;
         }
@@ -330,13 +343,8 @@ char AnalyzeLetStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-    //First condition: if data type is null then we can't have a type mismatch
-    //Second condition: if we are writing into an indexed(expressionIndex == 6) Array type,
-    //then the expression data type must be an int
-    //Third condition: if data types are different, and it's not an indexed array, we have a type mismatch
-    if (strcmp(type,"null") &&
-        ((strcmp(type,"Array")==0 && expressionIndex == 6 && strcmp(expression_node->dataType,"int")) ||
-        (strcmp(expression_node->dataType,type) && expressionIndex != 6))) {
+    //No data type checks for array members, because arrays can store any type
+    if (expressionIndex != 6 && !areDataTypesCompatible(expression_node->dataType,type)) {
         reportError(self,"Type mismatch",node->children[1]->token->line);
         return 0;
     }
@@ -350,7 +358,7 @@ char AnalyzeIfStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-    if (strcmp(self->current->dataType,"boolean")) {
+    if (!areDataTypesCompatible(self->current->dataType,"boolean")) {
         return 0;
     }
     self->current = node->children[5];
@@ -373,7 +381,7 @@ char AnalyzeWhileStatement(SemanticData *self) {
     if (!AnalyzeExpression(self)) {
         return 0;
     }
-    if (strcmp(self->current->dataType,"boolean")) {
+    if (!areDataTypesCompatible(self->current->dataType,"boolean")) {
         reportError(self,"Expected expression to be boolean",node->children[0]->token->line);
         return 0;
     }
@@ -404,11 +412,10 @@ char AnalyzeReturnStatement(SemanticData *self) {
     }
     //current = expression
     //node = returnStatement
-    //parent = statement
-    //parent^2 = statements
-    //parent^3 = subroutineBody
-    //parent^4 = subroutineDec
-    const NodeAST *subroutineDecNode = node->parent->parent->parent->parent;
+    //parent = statements
+    //parent^2 = subroutineBody
+    //parent^3 = subroutineDec
+    const NodeAST *subroutineDecNode = node->parent->parent->parent;
     const char *name = subroutineDecNode->children[2]->token->info.identifier;
     const char *class = self->root->children[1]->token->info.identifier;
     const Routine *routine = getRoutine(self->routine_table,name,class);
@@ -417,7 +424,7 @@ char AnalyzeReturnStatement(SemanticData *self) {
         reportError(self,"Expected no return type for void function",self->current->token->line);
         return 0;
     }
-    if (strcmp(type_routine,self->current->dataType)) {
+    if (!areDataTypesCompatible(type_routine,self->current->dataType)) {
         reportError(self,
             strcat(strcat("expected ",type_routine)," return type"),
             self->current->token->line);
@@ -435,11 +442,11 @@ char AnalyzeExpression(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        node->dataType = self->current->dataType;
+        strncpy(node->dataType,self->current->dataType,self->dt_size);
         self->current = node;
         return 1;
     }
-    if (strcmp(self->current->dataType,"boolean")) {
+    if (!areDataTypesCompatible(self->current->dataType,"boolean")) {
         reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -448,7 +455,7 @@ char AnalyzeExpression(SemanticData *self) {
         if (!AnalyzeE1(self)) {
             return 0;
         }
-        if (strcmp(self->current->dataType,"boolean")) {
+        if (!areDataTypesCompatible(self->current->dataType,"boolean")) {
             reportError(self,"Expected boolean value for expression",node->children[1]->token->line);
             return 0;
         }
@@ -478,17 +485,17 @@ char AnalyzeE1(SemanticData *self) {
             return 0;
         }
         if (i == 2) {
-            if (operator_token->info.symbol != '=' && strcmp(operand1->dataType,"int")) {
+            if (operator_token->info.symbol != '=' && !areDataTypesCompatible(operand1->dataType,"int")) {
                 reportError(self,"Expected int data type",operator_token->line);
                 return 0;
             }
-            if (strcmp(operand1->dataType,operand2->dataType)) {
+            if (!areDataTypesCompatible(operand1->dataType,operand2->dataType)) {
                 reportError(self,"Mismatched data types",operator_token->line);
                 return 0;
             }
             continue;
         }
-        if (strcmp(operand2->dataType,"boolean")) {
+        if (!areDataTypesCompatible(operand2->dataType,"boolean")) {
             reportError(self,"unexpected data type",operator_token->line);
             return 0;
         }
@@ -509,7 +516,7 @@ char AnalyzeE2(SemanticData *self) {
         self->current = node;
         return 1;
     }
-    if (strcmp(self->current->dataType,"int")) {
+    if (!areDataTypesCompatible(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -518,7 +525,7 @@ char AnalyzeE2(SemanticData *self) {
         if (!AnalyzeE3(self)) {
             return 0;
         }
-        if (strcmp(self->current->dataType,"int")) {
+        if (!areDataTypesCompatible(self->current->dataType,"int")) {
             reportError(self,"Expected int value for expression",node->children[1]->token->line);
             return 0;
         }
@@ -540,7 +547,7 @@ char AnalyzeE3(SemanticData *self) {
         return 1;
     }
 
-    if (strcmp(self->current->dataType,"int")) {
+    if (!areDataTypesCompatible(self->current->dataType,"int")) {
         reportError(self,"Expected int value for expression",node->children[1]->token->line);
         return 0;
     }
@@ -550,12 +557,12 @@ char AnalyzeE3(SemanticData *self) {
         if (!AnalyzeTerm(self)) {
             return 0;
         }
-        if (strcmp(self->current->dataType,"int")) {
+        if (!areDataTypesCompatible(self->current->dataType,"int")) {
             reportError(self,"Expected int value for expression",node->children[1]->token->line);
             return 0;
         }
     }
-    strncpy(node->dataType,"boolean",self->dt_size);
+    strncpy(node->dataType,"int",self->dt_size);
     self->current = node;
     return 1;
 }
@@ -600,6 +607,44 @@ char AnalyzeSubroutineCall(SemanticData *self) {
         return 0;
     }
     strncpy(node->dataType,routine->type,self->dt_size);
+    self->current = node;
+    return 1;
+}
+char analyzeIdentifierTerm(SemanticData *self) {
+    NodeAST *node = self->current;
+    const char *name = node->children[0]->token->info.identifier;
+    const char *ident_type = typeOf(self->symbol_table,name,strlen(name));
+    //Could be an object instance -> symbol table, or static function call -> className
+    const char isClass = doesClassExist(self->class_table,name);
+    const char isVar = strcmp(ident_type,"") != 0;
+    if (!isVar && !isClass) {
+        reportError(self,"Undefined variable or class",node->children[0]->token->line);
+        return 0;
+    }
+    if (isVar) {
+        strncpy(node->dataType,ident_type,self->dt_size);
+    }
+    else {
+        strncpy(node->dataType,name,self->dt_size);
+    }
+
+    if (node->currChildIndex > 1) {
+        self->current = node->children[2];
+        if (!AnalyzeExpression(self)) {
+            return 0;
+        }
+        if (strcmp(ident_type,"Array")) {
+            reportError(self,"Expected array type",self->current->token->line);
+            return 0;
+        }
+        if (!areDataTypesCompatible(self->current->dataType,"int")) {
+            reportError(self,"Expected index data type to be int",self->current->token->line);
+            return 0;
+        }
+        //null is compatible with any type, as is an array member which can be of any type
+        strncpy(node->dataType,"null",self->dt_size);
+        //No length check for now - overflow possible
+    }
     self->current = node;
     return 1;
 }
@@ -652,39 +697,13 @@ char AnalyzeTerm(SemanticData *self) {
         }
 
         case NODE_IDENTIFIER: {
-            const char *name = node->children[0]->token->info.identifier;
-            const char *ident_type = typeOf(self->symbol_table,name,strlen(name));
-            //Could be an object instance -> symbol table, or static function call -> className
-            const char isClass = doesClassExist(self->class_table,name);
-            const char isVar = strcmp(ident_type,"") != 0;
-            if (!isVar && !isClass) {
-                reportError(self,"Undefined variable or class",node->children[0]->token->line);
-                return 0;
-            }
-            if (isVar) {
-                strncpy(node->dataType,ident_type,self->dt_size);
-            }
-            else {
-                strncpy(node->dataType,name,self->dt_size);
-            }
-
-            if (node->currChildIndex > 1) {
-                self->current = node->children[2];
-                if (!AnalyzeExpression(self)) {
-                    return 0;
-                }
-                if (strcmp(ident_type,"Array")) {
-                    reportError(self,"Expected array type",node->children[2]->token->line);
-                    return 0;
-                }
-                //No length check for now - overflow possible
-            }
-            return 1;
+            return analyzeIdentifierTerm(self);
         }
 
         case NODE_SYMBOL: {
             self->current = node->children[1];
             const char res = AnalyzeExpression(self);
+            node->dataType = self->current->dataType;
             self->current = node;
             return res;
         }

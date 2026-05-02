@@ -34,6 +34,29 @@ void printNode(const NodeAST* node) {
     printf("Node:\nType:%d\nChildren count:%d\nToken:%d\n\n",
         node->nodeType,(int)node->childrenCount,node->token == NULL? -1: node->token->type);
 }
+void printHeapStatus() {
+    const int heapstatus = _heapchk();
+    switch( heapstatus )
+    {
+        case _HEAPOK:
+            printf(" OK - heap is fine\n" );
+        break;
+        case _HEAPEMPTY:
+            printf(" OK - heap is empty\n" );
+        break;
+        case _HEAPBADBEGIN:
+            printf( "ERROR - bad start of heap\n" );
+        break;
+        case _HEAPBADNODE:
+            printf( "ERROR - bad node in heap\n" );
+        break;
+        case _HEAPBADPTR:
+            printf( "ERROR - bad pointer in heap\n" );
+        break;
+        default:
+            break;
+    }
+}
 ASTnodeType getNodeTypeFromTokenType(TokenType type) {
     switch (type) {
         case TT_KEYWORD: {
@@ -72,8 +95,9 @@ void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
         ast_curr->childrenCount *= 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
-            printf("Unable to allocate children for AST\n");
+            printf("Unable to allocate children for AST - token\n");
             printf("Line: %d\n",tokenizer->line);
+            printHeapStatus();
             exit(EXIT_FAILURE);
         }
     }
@@ -93,6 +117,7 @@ void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCo
             if (ast_curr->token != NULL) {
                 printf("Line: %d\n",ast_curr->token->line);
             }
+            printHeapStatus();
             exit(EXIT_FAILURE);
         }
     }

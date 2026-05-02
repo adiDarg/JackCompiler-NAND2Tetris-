@@ -10,6 +10,18 @@
  */
 class Main {
 
+    function int double(int a) {
+       return a * 2;
+    }
+
+    function void fill(Array a, int size) {
+        while (size > 0) {
+            let size = size - 1;
+            let a[size] = Array.new(3);
+        }
+        return;
+    }
+
     function void main() {
         var Array a, b, c;
         
@@ -53,18 +65,6 @@ class Main {
         do Output.printString("Test 5: expected result: 110; actual result: ");
         do Output.printInt(b[1]);
         do Output.println();
-        return;
-    }
-    
-    function int double(int a) {
-    	return a * 2;
-    }
-    
-    function void fill(Array a, int size) {
-        while (size > 0) {
-            let size = size - 1;
-            let a[size] = Array.new(3);
-        }
         return;
     }
 }

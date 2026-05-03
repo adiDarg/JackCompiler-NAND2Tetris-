@@ -8,6 +8,7 @@
 #include <windows.h>
 
 #include "JackAnalyzer.h"
+#include "../SemanticAnalysis/FunctionLoader/Loader.h"
 
 int operateOnDirectory(char path[],char intermediate[],RoutineTable *routine_table, ClassTable *class_table) {
     char searchPath[MAX_PATH];
@@ -33,12 +34,23 @@ int operateOnDirectory(char path[],char intermediate[],RoutineTable *routine_tab
             if (sec_pass_data_index >= sec_pass_data_len) {
                 printf("Too many files\n");
                 for (int i = 0; i < sec_pass_data_index; i++) {
-                    free(sec_pass_data[i]);
+                    destroySemanticData(sec_pass_data[i],0);
                 }
+                destroyRoutineTable(routine_table);
+                destroyClassTable(class_table);
                 FindClose(hFind);
                 return 1;
             }
-            sec_pass_data[sec_pass_data_index++] = operateFirstPass(fullName,intermediate,routine_table,class_table);
+            char uniquePath[100];
+
+            // Combine the base path with the index safely
+            snprintf(uniquePath, sizeof(uniquePath), "%s_%d.xml", intermediate, sec_pass_data_index);
+
+            // Pass uniquePath to your function
+            sec_pass_data[sec_pass_data_index++] = operateFirstPass(fullName, uniquePath, routine_table, class_table);
+            SemanticData *data = sec_pass_data[sec_pass_data_index-1];
+            LoadToTables(data->root,data->root->children[1]->token->info.identifier,
+                data->routine_table,data->class_table);
             free(fullName);
         }
     } while (FindNextFile(hFind, &findData));
@@ -46,6 +58,8 @@ int operateOnDirectory(char path[],char intermediate[],RoutineTable *routine_tab
         operateSecondPass(sec_pass_data[i]);
         destroySemanticData(sec_pass_data[i],0);
     }
+    destroyRoutineTable(routine_table);
+    destroyClassTable(class_table);
     FindClose(hFind);
     return 0;
 }

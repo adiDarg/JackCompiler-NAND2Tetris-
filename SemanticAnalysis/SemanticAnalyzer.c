@@ -143,19 +143,16 @@ char areDataTypesCompatible(const char *type1,const char *type2) {
     if (strcmp(type1,type2) == 0) {
         return 1;
     }
+    if ((strcmp(type1,"char") == 0 && strcmp(type2,"int") == 0) ||
+        (strcmp(type2,"char") == 0 && strcmp(type1,"int") == 0)) {
+        return 1;
+    }
     return 0;
 }
 
 //Implementations
 char Analyze(SemanticData *self) {
     return AnalyzeClass(self);
-}
-void LoadFileToTables(const SemanticData *self) {
-    const NodeAST* node = self->current;
-    const char *class = node->children[1]->token->info.identifier;
-    defineClass(self->class_table,class);
-    LoadToTables(node,node->children[1]->token->info.identifier,
-        self->routine_table,self->class_table);
 }
 char AnalyzeClass(SemanticData *self) {
     NodeAST* node = self->current;
@@ -639,7 +636,7 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_UNARY_OP: {
             self->current = node->children[1];
             const char res = AnalyzeTerm(self);
-            node->dataType = self->current->dataType;
+            node->dataType = strdup(self->current->dataType);
             self->current = node;
             return res;
         }
@@ -657,7 +654,7 @@ char AnalyzeTerm(SemanticData *self) {
             return 1;
         }
         case NODE_STRING_CONSTANT: {
-            strncpy(node->dataType,"char",self->dt_size);
+            strncpy(node->dataType,"String",self->dt_size);
             return 1;
         }
         case NODE_KEYWORD: {
@@ -688,7 +685,7 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_SYMBOL: {
             self->current = node->children[1];
             const char res = AnalyzeExpression(self);
-            node->dataType = self->current->dataType;
+            node->dataType = strdup(self->current->dataType);
             self->current = node;
             return res;
         }

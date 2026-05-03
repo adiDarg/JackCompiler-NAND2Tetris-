@@ -46,22 +46,17 @@ SemanticData *operateFirstPass(char path[],char intermediate[],RoutineTable *rou
                 result = construct_semantic_data(root,100,100,routine_table,class_table,30);
             }
 
-            struct stat path_stat_dest;
-            stat(intermediate, &path_stat_dest);
-            const int reg_dest = S_ISREG(path_stat_dest.st_mode);
-
-            if (reg_dest) {
-                FILE *fp_intermediate = fopen(intermediate, "wb");   // binary mode
-                if (fp_intermediate == NULL)
-                    return NULL;
-
-                fseek(fp, 0, SEEK_END);
-                rewind(fp_intermediate);
-
+            printf("%s\n",intermediate);
+            FILE *fp_intermediate = fopen(intermediate, "w");
+            if (fp_intermediate == NULL) {
+                printf("failed to write intermediate file\n");
+            }
+            else {
                 const int printSuccess = fprintf(fp_intermediate,success? compilation_engine->out: "<compilationError></compilationError>");
-                printf(printSuccess? "written to file":"failed to write to file");
+                printf(printSuccess? "written to file\n":"failed to write to file\n");
                 fclose(fp_intermediate);
             }
+
             free(source_code);
             free(compilation_engine);
             free(jack_tokenizer);

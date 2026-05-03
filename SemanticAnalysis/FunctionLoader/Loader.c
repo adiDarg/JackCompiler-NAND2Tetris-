@@ -32,6 +32,9 @@ char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_t
 
 void LoadToTables(const NodeAST *node,const char *class,
     RoutineTable *table, ClassTable *class_table) {
+    if (node == NULL) {
+        return;
+    }
     if (node->nodeType == NODE_SUBROUTINE_DEC) {
         RoutineKind kind;
         switch (node->children[0]->token->info.keyword) {
@@ -59,7 +62,6 @@ void LoadToTables(const NodeAST *node,const char *class,
     }
     if (node->nodeType == NODE_ROOT) {
         defineClass(class_table,class);
-        return;
     }
     for (int i = 0; i < node->currChildIndex ; i++) {
         LoadToTables(node->children[i],class,table,class_table);

@@ -2,7 +2,6 @@ cmake_minimum_required(VERSION 3.28)
 project(JackCompiler C)
 
 set(CMAKE_C_STANDARD 11)
-
 add_executable(JackCompiler main.c
         JackAnalyzer/JackAnalyzer.c
         JackTokenizer/JackTokenizer.c
@@ -29,6 +28,10 @@ add_executable(JackCompiler main.c
         SemanticAnalysis/ClassTable/ClassTable.h
         SemanticAnalysis/hashingFunctions/HashingFunctions.c
         SemanticAnalysis/hashingFunctions/HashingFunctions.h
-        SemanticAnalysis/FunctionLoader/FunctionLoader.c
-        SemanticAnalysis/FunctionLoader/FunctionLoader.h
+        SemanticAnalysis/FunctionLoader/Loader.c
+        SemanticAnalysis/FunctionLoader/Loader.h
+        JackAnalyzer/JackAnalyzerForDirectories.c
+        JackAnalyzer/JackAnalyzerForDirectories.h
 )
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)

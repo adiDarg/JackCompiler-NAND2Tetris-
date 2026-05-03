@@ -33,4 +33,5 @@ char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *
     const char *type, const char *class);
 Routine* getRoutine(const RoutineTable *self,const char *name, const char *class);
 RoutineTable* routine_table_constructor(const size_t tableSize);
+void destroyRoutineTable(RoutineTable *self);
 #endif //ROUTINETABLE_H

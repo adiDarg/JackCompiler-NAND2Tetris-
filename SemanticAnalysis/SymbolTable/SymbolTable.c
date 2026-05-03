@@ -25,6 +25,33 @@ SymbolTable* symbol_table_constructor(const int tableSize) {
     table->varIndex = 0;
     return table;
 }
+void destroySymbolTable(SymbolTable *self) {
+    for (int i = 0; i < self->size; i++) {
+        if (self->classScope[i] != NULL) {
+            SymbolList *curr = self->classScope[i];
+            while (curr != NULL) {
+                SymbolList *next = curr->next;
+                free(curr->symbol->array_member_type);
+                free(curr->symbol->name);
+                free(curr->symbol->type);
+                free(curr);
+                curr = next;
+            }
+        }
+        if (self->subroutineScope[i] != NULL) {
+            SymbolList *curr = self->subroutineScope[i];
+            while (curr != NULL) {
+                SymbolList *next = curr->next;
+                free(curr->symbol->array_member_type);
+                free(curr->symbol->name);
+                free(curr->symbol->type);
+                free(curr);
+                curr = next;
+            }
+        }
+    }
+    free(self);
+}
 SymbolList** getScope(const SymbolTable* self,const SymbolKind kind) {
     return (kind == SK_FIELD || kind == SK_STATIC) ?
         self->classScope :
@@ -55,12 +82,9 @@ char define(SymbolTable *self, char name[],const int nameLength, char type[],con
     //Initialize symbol for symbol table - saves info of identifier
     Symbol *symbol = malloc(sizeof(Symbol));
     symbol->kind = kind;
-    symbol->name = malloc(nameLength);
-    symbol->type = malloc(typeLength);
-    strcpy(symbol->name,name);
-    strcpy(symbol->type,type);
-    symbol->array_member_type = malloc(1);
-    strcpy(symbol->array_member_type,"");
+    symbol->name = strdup(name);
+    symbol->type = strdup(type);
+    symbol->array_member_type = strdup("");
     switch (kind) {
         case SK_FIELD: {
             symbol->index = self->fieldIndex;
@@ -190,17 +214,4 @@ void destroySymbolList(SymbolList* list) {
         list = list->next;
         free(temp);
     }
-}
-
-void destroySymbolTable(SymbolTable* self) {
-    if (self == NULL) return;
-
-    for (int i = 0; i < self->size; i++) {
-        destroySymbolList(self->classScope[i]);
-        destroySymbolList(self->subroutineScope[i]);
-    }
-
-    free(self->classScope);
-    free(self->subroutineScope);
-    free(self);
 }

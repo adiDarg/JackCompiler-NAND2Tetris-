@@ -185,7 +185,7 @@ int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);
 int isStringConst(const char* token, int len);
 int isIdentifier(const char* token, int len);
-TokenType tokenType(JackTokenizer *self) {
+CompilerTokenType tokenType(JackTokenizer *self) {
     const char* currentToken = self->buffer;
     const int len = strlen(self->buffer);
     if (len == 0) {

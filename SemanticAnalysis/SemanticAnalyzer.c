@@ -7,12 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
-#include "FunctionLoader/FunctionLoader.h"
+#include "FunctionLoader/Loader.h"
 #include "RoutineTable/RoutineTable.h"
 #include "SymbolTable/SymbolTable.h"
 
 SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
-    const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size,
+const size_t symbolTableSize, RoutineTable *routineTable, ClassTable *classTable,
     const size_t dt_size) {
     SemanticData *semantic_data = malloc(sizeof(SemanticData));
     semantic_data->root = root;
@@ -20,11 +20,21 @@ SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
     semantic_data->error_size = errorSize;
     semantic_data->error = malloc(errorSize);
     semantic_data->symbol_table = symbol_table_constructor(symbolTableSize);
-    semantic_data->routine_table = routine_table_constructor(routineTableSize);
-    semantic_data->class_table = class_table_constructor(class_table_size);
+    semantic_data->routine_table = routineTable;
+    semantic_data->class_table = classTable;
     semantic_data->isError = 0;
     semantic_data->dt_size = dt_size;
     return semantic_data;
+}
+void destroySemanticData(SemanticData *self,const char fullDest) {
+    if (fullDest) {
+        destroyClassTable(self->class_table);
+        destroyRoutineTable(self->routine_table);
+    }
+    destroySymbolTable(self->symbol_table);
+    destory_node(self->root);
+    free(self->error);
+    free(self);
 }
 void reportError(SemanticData* self,const char *error,const int line) {
     self->isError = 1;
@@ -140,12 +150,15 @@ char areDataTypesCompatible(const char *type1,const char *type2) {
 char Analyze(SemanticData *self) {
     return AnalyzeClass(self);
 }
-char AnalyzeClass(SemanticData *self) {
-    NodeAST* node = self->current;
+void LoadFileToTables(const SemanticData *self) {
+    const NodeAST* node = self->current;
     const char *class = node->children[1]->token->info.identifier;
     defineClass(self->class_table,class);
-    LoadFunctionsToSymbolTable(node,node->children[1]->token->info.identifier,
+    LoadToTables(node,node->children[1]->token->info.identifier,
         self->routine_table,self->class_table);
+}
+char AnalyzeClass(SemanticData *self) {
+    NodeAST* node = self->current;
     for (int i = 3; i < node->currChildIndex; i++) {
         self->current = node->children[i];
         if (self->current->nodeType == NODE_CLASS_VAR_DEC) {

@@ -42,4 +42,5 @@ SymbolKind kindOf(const SymbolTable* self,const char name[], const int length);
 char* typeOf(const SymbolTable* self,const char name[], const int length);
 int indexOf(const SymbolTable* self,const char name[], const int length);
 int lengthOf(const SymbolTable* self,const char name[], const int length);
+void destroySymbolTable(SymbolTable *self);
 #endif //SYMBOLTABLE_H

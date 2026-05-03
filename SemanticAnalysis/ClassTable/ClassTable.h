@@ -19,4 +19,5 @@ typedef struct ClassTable {
 ClassTable* class_table_constructor(const size_t tableSize);
 char defineClass(const ClassTable *self,const char *name);
 char doesClassExist(const ClassTable *self,const char *name);
+void destroyClassTable(ClassTable *self);
 #endif //CLASSTABLE_H

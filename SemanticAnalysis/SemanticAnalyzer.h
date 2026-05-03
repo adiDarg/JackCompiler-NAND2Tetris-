@@ -20,8 +20,10 @@ typedef struct SemanticData {
     size_t dt_size; //8
     unsigned char isError; //1
 } SemanticData;
+void LoadFileToTables(const SemanticData *self);
 SemanticData* construct_semantic_data(NodeAST *root,const size_t errorSize,
-    const size_t symbolTableSize, const size_t routineTableSize, const size_t class_table_size,
+    const size_t symbolTableSize, RoutineTable *routineTable, ClassTable *classTable,
     const size_t dt_size);
 char Analyze(SemanticData *self);
+void destroySemanticData(SemanticData *self,const char fullDest);
 #endif //SEMANTICANALYZER_H

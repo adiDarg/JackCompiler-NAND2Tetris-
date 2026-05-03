@@ -127,11 +127,17 @@ build CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunct
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\HashingFunctions
 
-build CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/FunctionLoader.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/FunctionLoader/FunctionLoader.c || cmake_object_order_depends_target_JackCompiler
-  DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\FunctionLoader\FunctionLoader.c.obj.d
+build CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/Loader.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/FunctionLoader/Loader.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\FunctionLoader\Loader.c.obj.d
   FLAGS = -g -std=gnu11 -fdiagnostics-color=always
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\FunctionLoader
+
+build CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackAnalyzer/JackAnalyzerForDirectories.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\JackAnalyzer\JackAnalyzerForDirectories.c.obj.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  OBJECT_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackAnalyzer
 
 
 # =============================================================================
@@ -141,7 +147,7 @@ build CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/FunctionLoader
 #############################################
 # Link the executable JackCompiler.exe
 
-build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SymbolTable/SymbolTable.c.obj CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/Token/Token.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SemanticAnalyzer.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/RoutineTable/RoutineTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/ClassTable/ClassTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunctions.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/FunctionLoader.c.obj
+build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SymbolTable/SymbolTable.c.obj CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/Token/Token.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SemanticAnalyzer.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/RoutineTable/RoutineTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/ClassTable/ClassTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunctions.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/Loader.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj
   FLAGS = -g
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\JackCompiler.dir

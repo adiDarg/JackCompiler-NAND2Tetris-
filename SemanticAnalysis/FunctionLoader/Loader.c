@@ -2,7 +2,7 @@
 // Created by Owner on 03/05/2026.
 //
 
-#include "FunctionLoader.h"
+#include "Loader.h"
 char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table) {
     if (routine_type_node->token->type == TT_IDENTIFIER) {
         char *class = routine_type_node->token->info.identifier;
@@ -30,7 +30,7 @@ char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_t
     }
 }
 
-void LoadFunctionsToSymbolTable(const NodeAST *node,const char *class,
+void LoadToTables(const NodeAST *node,const char *class,
     RoutineTable *table, ClassTable *class_table) {
     if (node->nodeType == NODE_SUBROUTINE_DEC) {
         RoutineKind kind;
@@ -57,7 +57,11 @@ void LoadFunctionsToSymbolTable(const NodeAST *node,const char *class,
         defineRoutine(table,kind,routine_name,routine_type,class);
         return;
     }
+    if (node->nodeType == NODE_ROOT) {
+        defineClass(class_table,class);
+        return;
+    }
     for (int i = 0; i < node->currChildIndex ; i++) {
-        LoadFunctionsToSymbolTable(node->children[i],class,table,class_table);
+        LoadToTables(node->children[i],class,table,class_table);
     }
 }

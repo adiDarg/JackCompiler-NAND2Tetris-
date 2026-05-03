@@ -5,15 +5,13 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
-
 #include "../JackTokenizer/jackTokenizer.h"
 #include "JackAnalyzer.h"
-#include "../VMWriter/VMWriter.h"
-
 #include "../CompilationEngine/CompilationEngine.h"
 #include "../SemanticAnalysis/SemanticAnalyzer.h"
 
-void operateOnFile(char path[],char destination[]) {
+SemanticData *operateFirstPass(char path[],char intermediate[],RoutineTable *routine_table,ClassTable *class_table) {
+    SemanticData *result = NULL;
     struct stat path_stat;
     stat(path, &path_stat);
     const int reg = (path_stat.st_mode & _S_IFREG);
@@ -21,7 +19,7 @@ void operateOnFile(char path[],char destination[]) {
         FILE *fp = fopen(path, "rb");   // binary mode
         if (fp == NULL) {
             printf("Can't open file");
-            return;
+            return NULL;
         }
 
         fseek(fp, 0, SEEK_END);
@@ -45,37 +43,40 @@ void operateOnFile(char path[],char destination[]) {
             printf(!success? compilation_engine->error: "");
             printf("\n");
             if (success) {
-                SemanticData *semantic_data = construct_semantic_data(root,100,100,100,100,30);
-                success = Analyze(semantic_data);
-                printf("Semantic analysis\n");
-                printf(success? "Success!\n": "Fail!\n");
-                printf(!success? semantic_data->error: "");
-                printf("\n");
+                result = construct_semantic_data(root,100,100,routine_table,class_table,30);
             }
 
             struct stat path_stat_dest;
-            stat(destination, &path_stat_dest);
+            stat(intermediate, &path_stat_dest);
             const int reg_dest = S_ISREG(path_stat_dest.st_mode);
 
             if (reg_dest) {
-                FILE *fp_dest = fopen(destination, "wb");   // binary mode
-                if (fp_dest == NULL) return;
+                FILE *fp_intermediate = fopen(intermediate, "wb");   // binary mode
+                if (fp_intermediate == NULL)
+                    return NULL;
 
                 fseek(fp, 0, SEEK_END);
-                rewind(fp_dest);
+                rewind(fp_intermediate);
 
-                const int printSuccess = fprintf(fp_dest,success? compilation_engine->out: "<compilationError></compilationError>");
+                const int printSuccess = fprintf(fp_intermediate,success? compilation_engine->out: "<compilationError></compilationError>");
                 printf(printSuccess? "written to file":"failed to write to file");
+                fclose(fp_intermediate);
             }
             free(source_code);
-            //free(writer);
-            destory_node(root);
             free(compilation_engine);
             free(jack_tokenizer);
         }
         fclose(fp);
     }
     else {
-        printf("Problem with file path");
+        printf("Problem with file path: %s\n",path);
     }
+    return result;
+}
+void operateSecondPass(SemanticData *semantic_data) {
+    const char success = Analyze(semantic_data);
+    printf("Semantic analysis\n");
+    printf(success? "Success!\n": "Fail!\n");
+    printf(!success? semantic_data->error: "");
+    printf("\n");
 }

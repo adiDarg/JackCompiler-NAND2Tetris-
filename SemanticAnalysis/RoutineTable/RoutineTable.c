@@ -19,6 +19,23 @@ RoutineTable* routine_table_constructor(const size_t tableSize) {
     addStandardLibRoutines(table);
     return table;
 }
+void destroyRoutineTable(RoutineTable *self) {
+    for (int i = 0; i < self->size; i++) {
+        if (self->routines[i] != NULL) {
+            RoutineList *curr = self->routines[i];
+            while (curr != NULL) {
+                RoutineList *next = curr->next;
+                free(curr->routine->class);
+                free(curr->routine->name);
+                free(curr->routine->type);
+                free(curr->routine);
+                free(curr);
+                curr = next;
+            }
+        }
+    }
+    free(self);
+}
 char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *name,
     const char *type, const char *class) {
     Routine *routine = malloc(sizeof(Routine));

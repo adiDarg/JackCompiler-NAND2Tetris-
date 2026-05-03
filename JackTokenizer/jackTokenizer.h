@@ -16,7 +16,7 @@ typedef enum {
     TT_IDENTIFIER,
     TT_UNKNOWN_TOKEN,
     TT_EOF_TOKEN
-} TokenType ;
+} CompilerTokenType ;
 
 typedef struct {
     char buffer[100]; //100
@@ -37,7 +37,7 @@ int isSymbol(char token,int len);
 int isIntConst(const char* token, int len);
 int isStringConst(const char* token, int len);
 int isIdentifier(const char* token, int len);
-TokenType tokenType(JackTokenizer *self);
+CompilerTokenType tokenType(JackTokenizer *self);
 Keyword keyword(const JackTokenizer *self);
 char symbol(const JackTokenizer *self);
 char* identifier(const JackTokenizer *self);

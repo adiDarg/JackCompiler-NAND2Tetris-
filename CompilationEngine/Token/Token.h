@@ -16,7 +16,7 @@ typedef union TokenInfo { //8
 typedef struct Token {
     TokenInfo info; //8
     int line; //4
-    TokenType type; //3 bits - 4 bytes
+    CompilerTokenType type; //3 bits - 4 bytes
 }Token;
 Token* createToken(JackTokenizer *tokenizer);
 #endif //TOKEN_H

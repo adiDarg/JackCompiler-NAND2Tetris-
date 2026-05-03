@@ -4,22 +4,30 @@
 void printNode(const NodeAST* node);
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
                             const size_t childrenCount, Token *token,const size_t dt_size) {
-    NodeAST *node = malloc(sizeof(NodeAST));
+    NodeAST *node = calloc(1, sizeof(NodeAST));
+    if (node == NULL)
+        return NULL;
+
     node->nodeType = nodeType;
     node->childrenCount = childrenCount;
-    node->children = malloc(childrenCount * sizeof(NodeAST*));
     node->parent = parent;
     node->token = token;
     node->currChildIndex = 0;
-    node->dataType = malloc(dt_size);
+
+    node->children = calloc(node->childrenCount, sizeof(NodeAST*));
+    if (dt_size > 0) {
+        node->dataType = calloc(dt_size, 1);
+    }
     return node;
 }
 void destory_node(NodeAST *node) {
     if (node == NULL) return;
 
     if (node->children != NULL) {
-        for (size_t i = 0; i < node->currChildIndex; i++) {
-            destory_node(node->children[i]);
+        for (size_t i = 0; i < node->childrenCount; i++) {
+            if (node->children[i] != NULL) {
+                destory_node(node->children[i]);
+            }
         }
         free(node->children);
     }
@@ -27,7 +35,9 @@ void destory_node(NodeAST *node) {
     if (node->token != NULL) {
         free(node->token);
     }
-
+    if (node->dataType != NULL) {
+        free(node->dataType);
+    }
     free(node);
 }
 void printNode(const NodeAST* node) {
@@ -57,7 +67,7 @@ void printHeapStatus() {
             break;
     }
 }
-ASTnodeType getNodeTypeFromTokenType(TokenType type) {
+ASTnodeType getNodeTypeFromTokenType(CompilerTokenType type) {
     switch (type) {
         case TT_KEYWORD: {
             type = NODE_KEYWORD;
@@ -92,7 +102,7 @@ ASTnodeType getNodeTypeFromTokenType(TokenType type) {
 }
 void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
     while (ast_curr->currChildIndex >= ast_curr->childrenCount) {
-        ast_curr->childrenCount *= 2;
+        ast_curr->childrenCount = (ast_curr->childrenCount == 0) ? 1 : ast_curr->childrenCount * 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
             printf("Unable to allocate children for AST - token\n");
@@ -100,17 +110,19 @@ void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
             printHeapStatus();
             exit(EXIT_FAILURE);
         }
+        for (int i = ast_curr->currChildIndex; i < ast_curr->childrenCount; i++) {
+            ast_curr->children[i] = NULL;
+        }
     }
     Token *token = createToken(tokenizer);
     const ASTnodeType type = getNodeTypeFromTokenType(token->type);
 
     NodeAST *node = construct_ast_node(type,ast_curr,0,token,tokenizer->dt_size);
-    ast_curr->children[ast_curr->currChildIndex] = node;
-    ast_curr->currChildIndex++;
+    ast_curr->children[ast_curr->currChildIndex++] = node;
 }
 void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCount,const size_t dt_size) {
     while (ast_curr->currChildIndex >= ast_curr->childrenCount) {
-        ast_curr->childrenCount *= 2;
+        ast_curr->childrenCount = (ast_curr->childrenCount == 0) ? 1 : ast_curr->childrenCount * 2;
         ast_curr->children = realloc(ast_curr->children,ast_curr->childrenCount * sizeof(NodeAST*));
         if (ast_curr->children == NULL) {
             printf("Unable to allocate children for AST\n");
@@ -119,6 +131,9 @@ void ast_node(NodeAST* ast_curr, const ASTnodeType type, const size_t childrenCo
             }
             printHeapStatus();
             exit(EXIT_FAILURE);
+        }
+        for (int i = ast_curr->currChildIndex; i < ast_curr->childrenCount; i++) {
+            ast_curr->children[i] = NULL;
         }
     }
     NodeAST *node = construct_ast_node(type,ast_curr,childrenCount,NULL,dt_size);

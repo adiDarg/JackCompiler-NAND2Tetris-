@@ -34,6 +34,20 @@ char defineClass(const ClassTable *self,const char *name) {
     (*listPtr)->next = NULL;
     return 1;
 }
+void destroyClassTable(ClassTable *self) {
+    for (int i = 0; i < self->size; i++) {
+        if (self->classes[i] != NULL) {
+            ClassList *curr = self->classes[i];
+            while (curr != NULL) {
+                ClassList *next = curr->next;
+                free(curr->name);
+                free(curr);
+                curr = next;
+            }
+        }
+    }
+    free(self);
+}
 char doesClassExist(const ClassTable *self,const char *name) {
     const int hash = fnv1a_hash(name,strlen(name)) % self->size;
     ClassList **listPtr = &self->classes[hash];

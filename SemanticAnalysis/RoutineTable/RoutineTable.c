@@ -33,11 +33,12 @@ char defineRoutine(const RoutineTable *self,const RoutineKind kind, const char *
             strcmp((*listPtr)->routine->class, class) == 0) {
             return 0;
         }
-        listPtr = &((*listPtr)->next);
+        listPtr = &(*listPtr)->next;
     }
     *listPtr = malloc(sizeof(RoutineList));
     (*listPtr)->routine = routine;
     (*listPtr)->next = NULL;
+    listPtr = &self->routines[hashValue];
     return 1;
 }
 Routine* getRoutine(const RoutineTable *self,const char *name, const char *class) {

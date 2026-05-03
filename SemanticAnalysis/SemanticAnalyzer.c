@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "FunctionLoader/FunctionLoader.h"
 #include "RoutineTable/RoutineTable.h"
 #include "SymbolTable/SymbolTable.h"
 
@@ -109,7 +110,6 @@ SymbolKind subroutine_scope_of_node(const NodeAST *scope_node) {
     return SK_NONE;
 }
 RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node);
-char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table);
 RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node) {
     const Keyword keyword = routine_kind_node->token->info.keyword;
     if (keyword == KW_CONSTRUCTOR) {
@@ -122,32 +122,6 @@ RoutineKind getRoutineKindOfNode(const NodeAST *routine_kind_node) {
         return ROUTINE_FUNCTION;
     }
     return ROUTINE_NONE;
-}
-char* getRoutineType(const NodeAST *routine_type_node, const ClassTable *class_table) {
-    if (routine_type_node->token->type == TT_IDENTIFIER) {
-        char *class = routine_type_node->token->info.identifier;
-        if (doesClassExist(class_table,class)) {
-            return class;
-        }
-        return "";
-    }
-    switch (routine_type_node->token->info.keyword) {
-        case KW_INT: {
-            return "int";
-        }
-        case KW_CHAR: {
-            return "char";
-        }
-        case KW_BOOLEAN: {
-            return "boolean";
-        }
-        case KW_VOID: {
-            return "void";
-        }
-        default: {
-            return "";
-        }
-    }
 }
 char areDataTypesCompatible(const char *type1,const char *type2) {
     if (strcmp(type1,"null") == 0) {
@@ -170,6 +144,8 @@ char AnalyzeClass(SemanticData *self) {
     NodeAST* node = self->current;
     const char *class = node->children[1]->token->info.identifier;
     defineClass(self->class_table,class);
+    LoadFunctionsToSymbolTable(node,node->children[1]->token->info.identifier,
+        self->routine_table,self->class_table);
     for (int i = 3; i < node->currChildIndex; i++) {
         self->current = node->children[i];
         if (self->current->nodeType == NODE_CLASS_VAR_DEC) {
@@ -215,10 +191,6 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
 
     const char *class = self->root->children[1]->token->info.identifier;
     const char *routine_name = node->children[2]->token->info.identifier;
-    if (!defineRoutine(self->routine_table,kind,routine_name,routine_type,class)) {
-        reportError(self,"Routine already defined",node->children[2]->token->line);
-        return 0;
-        }
 
     self->current = node->children[4];
     if (!AnalyzeParameterList(self)) {
@@ -574,7 +546,7 @@ char AnalyzeSubroutineCall(SemanticData *self) {
     char *subroutine_name;
     NodeAST *expression_list;
     int line;
-    if (node->children[2]->nodeType == NODE_EXPRESSION) {
+    if (node->children[2]->nodeType == NODE_EXPRESSION_LIST) {
         class = self->root->children[1]->token->info.identifier;
         subroutine_name = node->children[0]->token->info.identifier;
         expression_list = node->children[2];

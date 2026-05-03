@@ -29,4 +29,6 @@ add_executable(JackCompiler main.c
         SemanticAnalysis/ClassTable/ClassTable.h
         SemanticAnalysis/hashingFunctions/HashingFunctions.c
         SemanticAnalysis/hashingFunctions/HashingFunctions.h
+        SemanticAnalysis/FunctionLoader/FunctionLoader.c
+        SemanticAnalysis/FunctionLoader/FunctionLoader.h
 )

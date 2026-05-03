@@ -248,7 +248,12 @@ int compileOperator(CompilationEngine* self) {
 }
 int compileUnaryOperator(CompilationEngine* self) {
     const char symbols[] = {'-','~'};
-    return compileSymbols(self,symbols,2);
+    if (compileSymbols(self,symbols,2)) {
+        //Node is created with generic type symbol - change to specific unary operator type
+        self->ast_curr->children[self->ast_curr->currChildIndex - 1]->nodeType = NODE_UNARY_OP;
+        return 1;
+    }
+    return 0;
 }
 int isTerm(const CompilationEngine* self) {
     JackTokenizer* tokenizer = self->jack_tokenizer;

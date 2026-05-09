@@ -42,10 +42,12 @@ const char *keyword_to_text(const Keyword kw) {
     return NULL;  // not a keyword
 }
 const char *keywords_to_text(const Keyword* kw,const int len) {
-    char* res = malloc(12 * len);
+    const size_t res_size = 13 * (len + 1);
+    char* res = malloc(res_size);
+    res[0] = '\0';
     for (int i = 0; i < len; i++) {
-        strcat(res,keyword_to_text(kw[i]));
-        strcat(res,",");
+        strcat_s(res,res_size,keyword_to_text(kw[i]));
+        strcat_s(res,res_size,",");
     }
     return res;
 }

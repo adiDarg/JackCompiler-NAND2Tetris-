@@ -270,7 +270,10 @@ int intVal(const JackTokenizer *self) {
     return atoi(self->buffer);
 }
 char* stringVal(const JackTokenizer *self) {
-    const size_t len = strlen(self->buffer);
+    size_t len = strlen(self->buffer);
+    if (len < 2) {
+        len = 2;
+    }
     char *res = malloc(len-1);
     if (res == NULL) {
         return NULL;

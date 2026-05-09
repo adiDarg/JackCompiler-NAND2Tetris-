@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 project(JackCompiler C)
 
 set(CMAKE_C_STANDARD 11)
+add_compile_options(-fsanitize=address)
+add_link_options(-fsanitize=address)
 add_executable(JackCompiler main.c
         JackAnalyzer/JackAnalyzer.c
         JackTokenizer/JackTokenizer.c
@@ -32,6 +34,6 @@ add_executable(JackCompiler main.c
         SemanticAnalysis/FunctionLoader/Loader.h
         JackAnalyzer/JackAnalyzerForDirectories.c
         JackAnalyzer/JackAnalyzerForDirectories.h
+        debugging/debuggingTools.c
+        debugging/debuggingTools.h
 )
-add_compile_options(-fsanitize=address)
-add_link_options(-fsanitize=address)

@@ -16,6 +16,7 @@ typedef struct {
     size_t len; //8
     size_t cap; //8
     size_t dt_size; //8
+    size_t error_size; //8
     int tab; //4
 }CompilationEngine;
 CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer);

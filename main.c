@@ -15,8 +15,12 @@ int main(int argc, char *argv[]) {
     ClassTable *class_table = class_table_constructor(50);
     if (fp != NULL) {
         fclose(fp);
-        operateFirstPass(argv[1],intermediate,routine_table,class_table);
+        SemanticData *data = operateFirstPass(argv[1],intermediate,routine_table,class_table);
+        operateSecondPass(data);
         return 0;
     }
-    return operateOnDirectory(argv[1],intermediate,routine_table,class_table);
+    const char result = operateOnDirectory(argv[1],intermediate,routine_table,class_table);
+    destroyRoutineTable(routine_table);
+    destroyClassTable(class_table);
+    return result;
 }

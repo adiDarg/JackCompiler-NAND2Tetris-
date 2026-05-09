@@ -21,6 +21,7 @@ CompilationEngine* Construct_Engine(JackTokenizer* jack_tokenizer) {
     self->cap=8192;
     self->len = 0;
     self->error[0] = '\0';
+    self->error_size = 100;
     self->dt_size = jack_tokenizer->dt_size;
     return self;
 }
@@ -37,20 +38,20 @@ void writeOut(CompilationEngine* self,const char str[]) {
         self->out = tmp;
     }
     for (int i = 0; i < self->tab; i++) {
-        strcat(self->out,"  ");
+        strcat_s(self->out,self->cap,"  ");
     }
     self->len += self->tab * 2;
-    strncat(self->out,str,n);
+    strncat_s(self->out,self->cap,str,n);
     self->len += n;
 }
-int compileKeyword(CompilationEngine* self, Keyword kw) {
+int compileKeyword(CompilationEngine* self,const Keyword kw) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,tokenizer->error);
+        strcpy_s(self->error,self->error_size,tokenizer->error);
         return 0;
     }
     if (tokenType(tokenizer) != TT_KEYWORD || keyword(tokenizer) != kw) {
-        sprintf(self->error,"line %d: Expected %s",self->jack_tokenizer->line,keyword_to_text(kw));
+        sprintf_s(self->error,self->error_size,"line %d: Expected %s",self->jack_tokenizer->line,keyword_to_text(kw));
         return 0;
     }
     writeOut(self,"<keyword> ");
@@ -66,7 +67,7 @@ int compileKeyword(CompilationEngine* self, Keyword kw) {
 int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (tokenType(tokenizer) != TT_KEYWORD) {
-        snprintf(self->error,100,"line %d: Expected Keyword: %s",
+        snprintf(self->error,self->error_size,"line %d: Expected Keyword: %s",
             self->jack_tokenizer->line, keywords_to_text(arr,len));
         return 0;
     }
@@ -81,21 +82,21 @@ int compileKeywords(CompilationEngine* self, const Keyword* arr,const int len){
             self->tab = temp;
             token_ast_node(tokenizer,self->ast_curr);
             advance(tokenizer);
-            strcpy(self->error,"\0");
+            strcpy_s(self->error,self->error_size,"\0");
             return 1;
         }
     }
-    strcpy(self->error,"Expected keyword: ");
-    strncat(self->error,keywords_to_text(arr,len),80);
+    strcpy_s(self->error,self->error_size,"Expected keyword: ");
+    strncat_s(self->error,self->error_size,keywords_to_text(arr,len),80);
     return 0;
 }
 int compileIdentifier(CompilationEngine* self) {
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,self->jack_tokenizer->error);
+        strcpy_s(self->error,self->error_size,self->jack_tokenizer->error);
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != TT_IDENTIFIER) {
-        sprintf(self->error,"line %d: Expected Identifier",self->jack_tokenizer->line);
+        sprintf_s(self->error,self->error_size,"line %d: Expected Identifier",self->jack_tokenizer->line);
         return 0;
     }
     writeOut(self, "<identifier> ");
@@ -111,31 +112,32 @@ int compileIdentifier(CompilationEngine* self) {
 int compileSymbol(CompilationEngine* self, char sym) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,tokenizer->error);
+        strcpy_s(self->error,self->error_size,tokenizer->error);
         return 0;
     }
     if (tokenType(tokenizer) != TT_SYMBOL || symbol(tokenizer) != sym) {
-        sprintf(self->error,"line %d: Expected %c",self->jack_tokenizer->line,sym);
+        sprintf_s(self->error,self->error_size,"line %d: Expected %c",self->jack_tokenizer->line,sym);
         return 0;
     }
     writeOut(self,"<symbol> ");
     const int temp = self->tab;
     self->tab = 0;
+    const size_t str_size = 7;
     char str[7];
     str[0] = symbol(self->jack_tokenizer);
     str[1] = '\0';
     switch (str[0]) {
         case '<':
-            strcpy(str,"&lt;");
+            strcpy_s(str,str_size,"&lt;");
             break;
         case '>':
-            strcpy(str,"&gt;");
+            strcpy_s(str,str_size,"&gt;");
             break;
         case '"':
-            strcpy(str,"&quot;");
+            strcpy_s(str,str_size,"&quot;");
             break;
         case '&':
-            strcpy(str,"&amp;");
+            strcpy_s(str,str_size,"&amp;");
             break;
         default:
             break;
@@ -150,17 +152,17 @@ int compileSymbol(CompilationEngine* self, char sym) {
 int compileSymbols(CompilationEngine* self, const char* arr,const int len){
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,tokenizer->error);
+        strcpy_s(self->error,self->error_size,tokenizer->error);
         return 0;
     }
     if (tokenType(tokenizer) != TT_SYMBOL) {
-        strcpy(self->error,"Expected symbol: ");
+        strcpy_s(self->error,self->error_size,"Expected symbol: ");
         for (int i = 0; i < len; i++) {
             char char_as_string[2];
             char_as_string[0] = arr[i];
             char_as_string[1] = '\0';
-            strncat(self->error,char_as_string,2);
-            strcat(self->error,",");
+            strncat_s(self->error,self->error_size,char_as_string,2);
+            strcat_s(self->error,self->error_size,",");
         }
         return 0;
     }
@@ -170,30 +172,30 @@ int compileSymbols(CompilationEngine* self, const char* arr,const int len){
             return compileSymbol(self,ch);
         }
     }
-    strcpy(self->error,"Expected symbol: ");
+    strcpy_s(self->error,self->error_size,"Expected symbol: ");
     for (int i = 0; i < len; i++) {
         char char_as_string[2];
         char_as_string[0] = arr[i];
         char_as_string[1] = '\0';
-        strncat(self->error,char_as_string,2);
-        strcat(self->error,",");
+        strncat_s(self->error,self->error_size,char_as_string,2);
+        strcat_s(self->error,self->error_size,",");
     }
     return 0;
 }
 int compileIntConstant(CompilationEngine* self) {
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,self->jack_tokenizer->error);
+        strcpy_s(self->error,self->error_size,self->jack_tokenizer->error);
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != TT_INT_CONST) {
-        sprintf(self->error,"Expected int constant");
+        sprintf_s(self->error,self->error_size,"Expected int constant");
         return 0;
     }
     writeOut(self, "<integerConstant> ");
     const int temp = self->tab;
     self->tab = 0;
     char str[20];
-    sprintf(str, "%d", intVal(self->jack_tokenizer));
+    sprintf_s(str,20,"%d", intVal(self->jack_tokenizer));
     writeOut(self, str);
     writeOut(self," </integerConstant>\n");
     self->tab = temp;
@@ -203,11 +205,11 @@ int compileIntConstant(CompilationEngine* self) {
 }
 int compileStringConstant(CompilationEngine* self) {
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,self->jack_tokenizer->error);
+        strcpy_s(self->error,self->error_size,self->jack_tokenizer->error);
         return 0;
     }
     if (tokenType(self->jack_tokenizer) != TT_STRING_CONST) {
-        sprintf(self->error,"Expected string constant");
+        sprintf_s(self->error,self->error_size,"Expected string constant");
         return 0;
     }
     writeOut(self, "<stringConstant> ");
@@ -223,14 +225,14 @@ int compileStringConstant(CompilationEngine* self) {
 int compileType(CompilationEngine* self) {
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (self->jack_tokenizer->isError == 1) {
-        strcpy(self->error,tokenizer->error);
+        strcpy_s(self->error,self->error_size,tokenizer->error);
         return 0;
     }
     const int primitive = tokenType(tokenizer) == TT_KEYWORD &&
         ((keyword(tokenizer) == KW_INT) || (keyword(tokenizer) == KW_CHAR) || (keyword(tokenizer) == KW_BOOLEAN));
     const int className = tokenType(tokenizer) == TT_IDENTIFIER;
     if (!primitive && !className){
-        sprintf(self->error,"line %d: Expected a type",self->jack_tokenizer->line);
+        sprintf_s(self->error,self->error_size,"line %d: Expected a type",self->jack_tokenizer->line);
         return 0;
     }
     if (primitive) {
@@ -276,7 +278,7 @@ int CompileClass(CompilationEngine *self) {
 
     JackTokenizer* tokenizer = self->jack_tokenizer;
     advance(tokenizer);
-    strcpy(tokenizer->error,"\0");
+    strcpy_s(tokenizer->error,self->error_size,"\0");
     tokenizer->isError = 0;
 
     if (!compileKeyword(self,KW_CLASS)) {
@@ -294,8 +296,13 @@ int CompileClass(CompilationEngine *self) {
             return 0;
         }
     }
+    int count = 1;
     while (tokenType(tokenizer) == TT_KEYWORD &&
     keyword(tokenizer) == KW_CONSTRUCTOR || keyword(tokenizer) == KW_FUNCTION || keyword(tokenizer) == KW_METHOD) {
+        if (count == 5) {
+            printf("Check CompileClass\n");
+        }
+        count++;
         if (!CompileSubroutineDec(self)) {
             return 0;
         }
@@ -342,7 +349,6 @@ int CompileSubroutineBody(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_SUBROUTINE_BODY,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
-
     JackTokenizer* tokenizer = self->jack_tokenizer;
     if (!compileSymbol(self,'{')) {
         return 0;
@@ -352,9 +358,11 @@ int CompileSubroutineBody(CompilationEngine* self) {
             return 0;
         }
     }
+    printf("Check 1 SubroutineBody\n");
     if (!CompileStatements(self)) {
         return 0;
     }
+    printf("Check 2 SubroutineBody\n");
     if (!compileSymbol(self,'}')) {
         return 0;
     }
@@ -370,14 +378,13 @@ int CompileSubroutineDec(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_SUBROUTINE_DEC,7,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
-
     const Keyword arr[] = {KW_CONSTRUCTOR,KW_FUNCTION,KW_METHOD};
     if (!compileKeywords(self,arr,3)) {
         return 0;
     }
     if (!compileKeyword(self,KW_VOID)) {
         if (!compileType(self)) {
-            sprintf(self->error,"line %d: Expected a type (or void)",self->jack_tokenizer->line);
+            sprintf_s(self->error,self->error_size,"line %d: Expected a type (or void)",self->jack_tokenizer->line);
             return 0;
         };
     }
@@ -393,9 +400,11 @@ int CompileSubroutineDec(CompilationEngine* self) {
     if (!compileSymbol(self,')')) {
         return 0;
     }
+    printf("Check 1 SubroutineDec\n");
     if (!CompileSubroutineBody(self)) {
         return 0;
     }
+    printf("Check 2 SubroutineDec\n");
     self->tab--;
     writeOut(self,"</subroutineDec>\n");
     self->ast_curr = self->ast_curr->parent;
@@ -463,11 +472,14 @@ int CompileStatements(CompilationEngine* self) {
     writeOut(self,"<statements>\n");
     self->tab++;
 
+    printf("Check 1 Statements\n");
     ast_node(self->ast_curr,NODE_STATEMENTS,1,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+    printf("Check 2 Statements\n");
 
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
+        printf("Check Loop - Statements\n");
         switch (keyword(self->jack_tokenizer)) {
             case KW_LET:
                 if (!CompileLet(self)) {
@@ -485,6 +497,7 @@ int CompileStatements(CompilationEngine* self) {
                 }
                 break;
             case KW_DO:
+                printf("Check Enter Do\n");
                 if (!CompileDo(self)) {
                     return 0;
                 }
@@ -526,7 +539,7 @@ int CompileLet(CompilationEngine* self) {
         }
     }
     else {
-        strncpy(self->error,"\0",1);
+        strcpy_s(self->error,self->error_size,"\0");
     }
     if (!compileSymbol(self,'=')) {
         return 0;
@@ -622,16 +635,21 @@ int CompileWhile(CompilationEngine* self) {
 int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
+    printf("Check 1 Do\n");
 
     ast_node(self->ast_curr,NODE_DO_STATEMENT,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
+    printf("Check 2 Do\n");
+
     if (!compileKeyword(self,KW_DO)) {
         return 0;
     }
+    printf("Check 3 Do\n");
     if (!CompileSubroutineCall(self)) {
         return 0;
     }
+    printf("Check 4 Do\n");
     if (!compileSymbol(self,';')) {
         return 0;
     }
@@ -671,80 +689,88 @@ int compile_e3_pre(CompilationEngine* self);
 int CompileExpression(CompilationEngine* self) {
     writeOut(self,"<expression>\n");
     self->tab++;
-
+    printf("Check 1 Expression\n");
     ast_node(self->ast_curr,NODE_EXPRESSION,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compile_e1_pre(self)) {
         return 0;
     }
+    printf("Check 2 Expression\n");
     while (compileSymbol(self,'&') || compileSymbol(self,'|')) {
         if (!compile_e1_pre(self)) {
             return 0;
         }
     }
     self->jack_tokenizer->isError = 0;
-    strcpy(self->error,"");
+    strcpy_s(self->error,self->error_size,"");
     self->tab--;
     writeOut(self,"</expression>\n");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int compile_e1_pre(CompilationEngine* self) {
+    printf("Check 1 e1\n");
     ast_node(self->ast_curr,NODE_E1,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-
+    printf("Check 2 e1\n");
     if (!compile_e2_pre(self)) {
         return 0;
     }
+    printf("Check 3 e1\n");
     while (compileSymbol(self,'<') || compileSymbol(self,'>') || compileSymbol(self,'=')) {
         if (!compile_e2_pre(self)) {
             return 0;
         }
     }
+    printf("Check 4 e1\n");
     self->jack_tokenizer->isError = 0;
-    strcpy(self->error,"");
+    strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int compile_e2_pre(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_E2,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-
+    printf("Check 1 e2\n");
     if (!compile_e3_pre(self)) {
         return 0;
     }
+    printf("Check 2 e2\n");
     while (compileSymbol(self,'+') || compileSymbol(self,'-')) {
         if (!compile_e3_pre(self)) {
             return 0;
         }
     }
+    printf("Check 3 e2\n");
     self->jack_tokenizer->isError = 0;
-    strcpy(self->error,"");
+    strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 int compile_e3_pre(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_E3,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-
+    printf("Check 1 e3\n");
     if (!CompileTerm(self)) {
         return 0;
     }
+    printf("Check 2 e3\n");
     while (compileSymbol(self,'*') || compileSymbol(self,'/')) {
         if (!CompileTerm(self)) {
             return 0;
         }
     }
+    printf("Check 3 e3\n");
     self->jack_tokenizer->isError = 0;
-    strcpy(self->error,"");
+    strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
     return 1;
 }
 
 void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* self) {
     if (*errors_size > 1)
-        strncat(*errors,"\n",1);
+        strcat_s(*errors,*errors_size,"\n");
     const size_t used = strlen(*errors);
     const size_t add = strlen(self->error);
     if (used + add + 2 > *errors_size) {
@@ -761,14 +787,16 @@ void writeAndRealloc(size_t* errors_size,char** errors,const CompilationEngine* 
         *errors_size *= 2;
     }
     const size_t remaining = *errors_size - used - 1;
-    strncat(*errors,self->error,remaining);
+    strcat_s(*errors,remaining,self->error);
 }
 int CompileTerm(CompilationEngine* self) {
     writeOut(self,"<term>\n");
     self->tab++;
 
     ast_node(self->ast_curr,NODE_TERM,4,self->dt_size);
+    printf("Check 1 Term\n");
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
+    printf("Check 2 Term\n");
 
     if (compileIntConstant(self)) {
         self->tab--;
@@ -808,7 +836,7 @@ int CompileTerm(CompilationEngine* self) {
                     return 0;
                 }
             }
-            strcpy(self->error,"");
+            strcpy_s(self->error,self->error_size,"");
             self->tab--;
             writeOut(self,"</term>\n");
             self->ast_curr = self->ast_curr->parent;
@@ -836,16 +864,18 @@ int CompileTerm(CompilationEngine* self) {
         }
         return 0;
     }
-    sprintf(self->error,"line %d: Expected a term",self->jack_tokenizer->line);
+    sprintf_s(self->error,self->error_size,"line %d: Expected a term",self->jack_tokenizer->line);
     return 0;
 }
 int CompileSubroutineCall(CompilationEngine* self) {
     writeOut(self,"<subroutineCall>\n");
     self->tab++;
 
+    printf("Check 1 SubroutineCall\n");
     ast_node(self->ast_curr,NODE_SUBROUTINE_CALL,6,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
+    printf("Check 2 SubroutineCall\n");
     if (!compileIdentifier(self)) {
         return 0;
     }
@@ -857,9 +887,11 @@ int CompileSubroutineCall(CompilationEngine* self) {
     if (!compileSymbol(self,'(')) {
         return 0;
     }
+    printf("Check 3 SubroutineCall\n");
     if (!CompileExpressionList(self)) {
         return 0;
     }
+    printf("Check 4 SubroutineCall\n");
     if (!compileSymbol(self,')')) {
         return 0;
     }
@@ -873,17 +905,21 @@ int CompileExpressionList(CompilationEngine* self) {
     writeOut(self,"<expressionList>\n");
     self->tab++;
 
+    printf("Check 1 ExpressionList\n");
     ast_node(self->ast_curr,NODE_EXPRESSION_LIST,1,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-
+    printf("Check 2 ExpressionList\n");
     if (!isTerm(self)) {
         self->tab--;
         writeOut(self,"</expressionList>\n");
         self->ast_curr = self->ast_curr->parent;
         return 1;
     }
+    printf("Check 3 ExpressionList\n");
     int first = 1;
     while (first || compileSymbol(self,',')) {
+        printf(self->jack_tokenizer->buffer);
+        printf("\nCheck Loop ExpressionList\n");
         if (!CompileExpression(self)) {
             return 0;
         }
@@ -891,6 +927,8 @@ int CompileExpressionList(CompilationEngine* self) {
             first = 0;
         }
     }
+    printf("Check 4 ExpressionList\n");
+
     self->tab--;
     writeOut(self,"</expressionList>\n");
     self->ast_curr = self->ast_curr->parent;

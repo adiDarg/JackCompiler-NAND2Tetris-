@@ -51,93 +51,99 @@ build cmake_object_order_depends_target_JackCompiler: phony || CMakeFiles/JackCo
 
 build CMakeFiles/JackCompiler.dir/main.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/main.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\main.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir
 
 build CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackAnalyzer/JackAnalyzer.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\JackAnalyzer\JackAnalyzer.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackAnalyzer
 
 build CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackTokenizer/JackTokenizer.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\JackTokenizer\JackTokenizer.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackTokenizer
 
 build CMakeFiles/JackCompiler.dir/JackTokenizer/Keyword/KeyWord.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackTokenizer/Keyword/KeyWord.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\JackTokenizer\Keyword\KeyWord.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackTokenizer\Keyword
 
 build CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/CompilationEngine/CompilationEngine.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\CompilationEngine\CompilationEngine.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\CompilationEngine
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/SymbolTable/SymbolTable.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/SymbolTable/SymbolTable.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\SymbolTable\SymbolTable.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\SymbolTable
 
 build CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/VMWriter/VMWriter.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\VMWriter\VMWriter.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\VMWriter
 
 build CMakeFiles/JackCompiler.dir/CompilationEngine/Token/Token.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/CompilationEngine/Token/Token.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\CompilationEngine\Token\Token.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\CompilationEngine\Token
 
 build CMakeFiles/JackCompiler.dir/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\CompilationEngine\AbstractSyntaxTree\AbstractSyntaxTree.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\CompilationEngine\AbstractSyntaxTree
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/SemanticAnalyzer.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/SemanticAnalyzer.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\SemanticAnalyzer.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/RoutineTable/RoutineTable.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/RoutineTable/RoutineTable.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\RoutineTable\RoutineTable.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\RoutineTable
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/ClassTable/ClassTable.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/ClassTable/ClassTable.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\ClassTable\ClassTable.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\ClassTable
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunctions.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/HashingFunctions/HashingFunctions.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\HashingFunctions\HashingFunctions.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\HashingFunctions
 
 build CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/Loader.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/SemanticAnalysis/FunctionLoader/Loader.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\SemanticAnalysis\FunctionLoader\Loader.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\SemanticAnalysis\FunctionLoader
 
 build CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/JackAnalyzer/JackAnalyzerForDirectories.c || cmake_object_order_depends_target_JackCompiler
   DEP_FILE = CMakeFiles\JackCompiler.dir\JackAnalyzer\JackAnalyzerForDirectories.c.obj.d
-  FLAGS = -g -std=gnu11 -fdiagnostics-color=always
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\JackAnalyzer
+
+build CMakeFiles/JackCompiler.dir/debugging/debuggingTools.c.obj: C_COMPILER__JackCompiler_unscanned_Debug C$:/Users/Owner/CLionProjects/JackCompiler/debugging/debuggingTools.c || cmake_object_order_depends_target_JackCompiler
+  DEP_FILE = CMakeFiles\JackCompiler.dir\debugging\debuggingTools.c.obj.d
+  FLAGS = -g -std=gnu11 -fdiagnostics-color=always -fsanitize=address
+  OBJECT_DIR = CMakeFiles\JackCompiler.dir
+  OBJECT_FILE_DIR = CMakeFiles\JackCompiler.dir\debugging
 
 
 # =============================================================================
@@ -147,8 +153,9 @@ build CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj:
 #############################################
 # Link the executable JackCompiler.exe
 
-build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SymbolTable/SymbolTable.c.obj CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/Token/Token.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SemanticAnalyzer.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/RoutineTable/RoutineTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/ClassTable/ClassTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunctions.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/Loader.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj
+build JackCompiler.exe: C_EXECUTABLE_LINKER__JackCompiler_Debug CMakeFiles/JackCompiler.dir/main.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj CMakeFiles/JackCompiler.dir/JackTokenizer/Keyword/KeyWord.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SymbolTable/SymbolTable.c.obj CMakeFiles/JackCompiler.dir/VMWriter/VMWriter.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/Token/Token.c.obj CMakeFiles/JackCompiler.dir/CompilationEngine/AbstractSyntaxTree/AbstractSyntaxTree.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/SemanticAnalyzer.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/RoutineTable/RoutineTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/ClassTable/ClassTable.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/HashingFunctions/HashingFunctions.c.obj CMakeFiles/JackCompiler.dir/SemanticAnalysis/FunctionLoader/Loader.c.obj CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj CMakeFiles/JackCompiler.dir/debugging/debuggingTools.c.obj
   FLAGS = -g
+  LINK_FLAGS = -fsanitize=address
   LINK_LIBRARIES = -lkernel32 -luser32 -lgdi32 -lwinspool -lshell32 -lole32 -loleaut32 -luuid -lcomdlg32 -ladvapi32
   OBJECT_DIR = CMakeFiles\JackCompiler.dir
   POST_BUILD = cd .

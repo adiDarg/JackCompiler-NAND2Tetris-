@@ -45,6 +45,9 @@ SemanticData *operateFirstPass(char path[],char intermediate[],RoutineTable *rou
             if (success) {
                 result = construct_semantic_data(root,100,100,routine_table,class_table,30);
             }
+            else {
+                destory_node(root);
+            }
 
             printf("%s\n",intermediate);
             FILE *fp_intermediate = fopen(intermediate, "w");
@@ -56,8 +59,8 @@ SemanticData *operateFirstPass(char path[],char intermediate[],RoutineTable *rou
                 printf(printSuccess? "written to file\n":"failed to write to file\n");
                 fclose(fp_intermediate);
             }
-
             free(source_code);
+            free(compilation_engine->out);
             free(compilation_engine);
             free(jack_tokenizer);
         }

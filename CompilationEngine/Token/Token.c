@@ -1,6 +1,9 @@
 #include "Token.h"
 
 #include <stdlib.h>
+#include <string.h>
+
+#include "../../debugging/debuggingTools.h"
 
 Token* createToken(JackTokenizer *tokenizer) {
     Token *token = malloc(sizeof(Token));
@@ -21,10 +24,16 @@ Token* createToken(JackTokenizer *tokenizer) {
         }
         case TT_STRING_CONST: {
             token->info.stringVal = stringVal(tokenizer);
+            if (token->info.stringVal == NULL) {
+                exit(2);
+            }
             break;
         }
         case TT_IDENTIFIER: {
             token->info.identifier = identifier(tokenizer);
+            if (token->info.identifier == NULL) {
+                exit(2);
+            }
             break;
         }
         default: {

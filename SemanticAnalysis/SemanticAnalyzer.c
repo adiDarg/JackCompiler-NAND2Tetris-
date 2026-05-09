@@ -424,7 +424,8 @@ char AnalyzeExpression(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size);
+        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
     }
@@ -442,7 +443,8 @@ char AnalyzeExpression(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"boolean",self->dt_size);
+    strncpy(node->dataType,"boolean",self->dt_size-1);
+    node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
 }
@@ -455,7 +457,8 @@ char AnalyzeE1(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size);
+        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
     }
@@ -482,7 +485,8 @@ char AnalyzeE1(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"boolean",self->dt_size);
+    strncpy(node->dataType,"boolean",self->dt_size-1);
+    node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
 }
@@ -494,7 +498,8 @@ char AnalyzeE2(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size);
+        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
     }
@@ -512,7 +517,8 @@ char AnalyzeE2(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"int",self->dt_size);
+    strncpy(node->dataType,"int",self->dt_size-1);
+    node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
 }
@@ -524,7 +530,8 @@ char AnalyzeE3(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size);
+        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
     }
@@ -544,7 +551,8 @@ char AnalyzeE3(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"int",self->dt_size);
+    strncpy(node->dataType,"int",self->dt_size-1);
+    node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
 }
@@ -588,7 +596,8 @@ char AnalyzeSubroutineCall(SemanticData *self) {
     if (!AnalyzeExpressionList(self)) {
         return 0;
     }
-    strncpy(node->dataType,routine->type,self->dt_size);
+    strncpy(node->dataType,routine->type,self->dt_size-1);
+    node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
 }
@@ -604,10 +613,12 @@ char analyzeIdentifierTerm(SemanticData *self) {
         return 0;
     }
     if (isVar) {
-        strncpy(node->dataType,ident_type,self->dt_size);
+        strncpy(node->dataType,ident_type,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
     }
     else {
-        strncpy(node->dataType,name,self->dt_size);
+        strncpy(node->dataType,name,self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
     }
 
     if (node->currChildIndex > 1) {
@@ -624,7 +635,8 @@ char analyzeIdentifierTerm(SemanticData *self) {
             return 0;
         }
         //null is compatible with any type, as is an array member which can be of any type
-        strncpy(node->dataType,"null",self->dt_size);
+        strncpy(node->dataType,"null",self->dt_size-1);
+        node->dataType[self->dt_size - 1] = '\0';
         //No length check for now - overflow possible
     }
     self->current = node;
@@ -644,32 +656,38 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_SUBROUTINE_CALL: {
             self->current = node->children[0];
             const char res = AnalyzeSubroutineCall(self);
-            strncpy(node->dataType, self->current->dataType,self->dt_size);
+            strncpy(node->dataType, self->current->dataType,self->dt_size-1);
+            node->dataType[self->dt_size - 1] = '\0';
             self->current = node;
             return res;
         }
 
         case NODE_INTEGER_CONSTANT: {
-            strncpy(node->dataType,"int",self->dt_size);
+            strncpy(node->dataType,"int",self->dt_size-1);
+            node->dataType[self->dt_size - 1] = '\0';
             return 1;
         }
         case NODE_STRING_CONSTANT: {
-            strncpy(node->dataType,"String",self->dt_size);
+            strncpy(node->dataType,"String",self->dt_size-1);
+            node->dataType[self->dt_size - 1] = '\0';
             return 1;
         }
         case NODE_KEYWORD: {
             const Keyword keyword = node->children[0]->token->info.keyword;
             switch (keyword) {
                 case KW_TRUE: case KW_FALSE: {
-                    strncpy(node->dataType,"boolean",self->dt_size);
+                    strncpy(node->dataType,"boolean",self->dt_size-1);
+                    node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
                 case KW_NULL: {
-                    strncpy(node->dataType,"null",self->dt_size);
+                    strncpy(node->dataType,"null",self->dt_size-1);
+                    node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
                 case KW_THIS: {
-                    strncpy(node->dataType,self->root->children[1]->token->info.identifier,self->dt_size);
+                    strncpy(node->dataType,self->root->children[1]->token->info.identifier,self->dt_size-1);
+                    node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
                 default: {

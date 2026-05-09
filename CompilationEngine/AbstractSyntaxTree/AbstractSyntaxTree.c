@@ -1,6 +1,7 @@
 #include "AbstractSyntaxTree.h"
 
 #include <stdio.h>
+#include "../../debugging/debuggingTools.h"
 void printNode(const NodeAST* node);
 NodeAST* construct_ast_node(const ASTnodeType nodeType,NodeAST *parent,
                             const size_t childrenCount, Token *token,const size_t dt_size) {
@@ -33,6 +34,12 @@ void destory_node(NodeAST *node) {
     }
 
     if (node->token != NULL) {
+        if (node->token->type == TT_IDENTIFIER) {
+            free(node->token->info.identifier);
+        }
+        else if (node->token->type == TT_STRING_CONST) {
+            free(node->token->info.stringVal);
+        }
         free(node->token);
     }
     if (node->dataType != NULL) {
@@ -43,29 +50,6 @@ void destory_node(NodeAST *node) {
 void printNode(const NodeAST* node) {
     printf("Node:\nType:%d\nChildren count:%d\nToken:%d\n\n",
         node->nodeType,(int)node->childrenCount,node->token == NULL? -1: node->token->type);
-}
-void printHeapStatus() {
-    const int heapstatus = _heapchk();
-    switch( heapstatus )
-    {
-        case _HEAPOK:
-            printf(" OK - heap is fine\n" );
-        break;
-        case _HEAPEMPTY:
-            printf(" OK - heap is empty\n" );
-        break;
-        case _HEAPBADBEGIN:
-            printf( "ERROR - bad start of heap\n" );
-        break;
-        case _HEAPBADNODE:
-            printf( "ERROR - bad node in heap\n" );
-        break;
-        case _HEAPBADPTR:
-            printf( "ERROR - bad pointer in heap\n" );
-        break;
-        default:
-            break;
-    }
 }
 ASTnodeType getNodeTypeFromTokenType(CompilerTokenType type) {
     switch (type) {
@@ -116,7 +100,6 @@ void token_ast_node(JackTokenizer* tokenizer,NodeAST* ast_curr) {
     }
     Token *token = createToken(tokenizer);
     const ASTnodeType type = getNodeTypeFromTokenType(token->type);
-
     NodeAST *node = construct_ast_node(type,ast_curr,0,token,tokenizer->dt_size);
     ast_curr->children[ast_curr->currChildIndex++] = node;
 }

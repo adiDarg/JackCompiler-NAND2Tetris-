@@ -1,0 +1,17 @@
+"C:\Program Files\JetBrains\CLion 2024.1.2\bin\cmake\win\x64\bin\cmake.exe" -DCMAKE_BUILD_TYPE=RelWithDebInfo "-DCMAKE_MAKE_PROGRAM=C:/Program Files/JetBrains/CLion 2024.1.2/bin/ninja/win/x64/ninja.exe" "-DCMAKE_C_COMPILER=C:/Program Files/LLVM/bin/clang.exe" "-DCMAKE_CXX_COMPILER=C:/Program Files/LLVM/bin/clang++.exe" -DCMAKE_C_COMPILER_WORKS=1 -DCMAKE_CXX_COMPILER_WORKS=1 -G Ninja -S C:\Users\Owner\CLionProjects\JackCompiler -B C:\Users\Owner\CLionProjects\JackCompiler\cmake-build-relwithdebinfo-system
+-- The C compiler identification is Clang 22.1.5 with GNU-like command-line
+CMake Error at C:/Program Files/JetBrains/CLion 2024.1.2/bin/cmake/win/x64/share/cmake-3.28/Modules/Platform/Windows-Clang.cmake:135 (enable_language):
+  No CMAKE_RC_COMPILER could be found.
+
+  Tell CMake where to find the compiler by setting either the environment
+  variable "RC" or the CMake cache entry CMAKE_RC_COMPILER to the full path
+  to the compiler, or to the compiler name if it is in the PATH.
+Call Stack (most recent call first):
+  C:/Program Files/JetBrains/CLion 2024.1.2/bin/cmake/win/x64/share/cmake-3.28/Modules/Platform/Windows-Clang.cmake:244 (__windows_compiler_clang_gnu)
+  C:/Program Files/JetBrains/CLion 2024.1.2/bin/cmake/win/x64/share/cmake-3.28/Modules/Platform/Windows-Clang.cmake:262 (__windows_compiler_clang_base)
+  C:/Program Files/JetBrains/CLion 2024.1.2/bin/cmake/win/x64/share/cmake-3.28/Modules/Platform/Windows-Clang-C.cmake:2 (__windows_compiler_clang)
+  C:/Program Files/JetBrains/CLion 2024.1.2/bin/cmake/win/x64/share/cmake-3.28/Modules/CMakeCInformation.cmake:48 (include)
+  CMakeLists.txt:2 (project)
+
+
+-- Configuring incomplete, errors occurred!

@@ -17,5 +17,6 @@ typedef struct {
     RoutineTable *routine_table; //8
     ClassTable *class_table; //8
     char *class; //8
+    int labelCount; //4
 } CodeGenInfo;
 #endif //CODEGENERATOR_H

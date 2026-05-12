@@ -19,6 +19,7 @@ CodeGenInfo *ConstructCodeGenerator(const char *destination, const size_t dest_s
     code_gen_info->symbol_table = symbol_table;
     code_gen_info->class_table = class_table;
     code_gen_info->routine_table = routine_table;
+    code_gen_info->labelCount = 0;
     return code_gen_info;
 }
 void GenerateClass(CodeGenInfo *self);
@@ -66,6 +67,17 @@ void generateIdentifierPush(const char *identifier,const int length, const CodeG
     const SymbolKind kind = kindOf(self->symbol_table,identifier,length);
     const int index = indexOf(self->symbol_table,identifier,length);
     writePop(self->vm_writer,getSegmentFromSK(kind),index);
+}
+char* generate_label(const char* base, int count) {
+    // Determine required size: base + underscore + ~10 digits + null terminator
+    int size = snprintf(NULL, 0, "%s_%d", base, count) + 1;
+    if (size <= 0) return NULL;
+
+    char* buffer = malloc(size);
+    if (buffer) {
+        snprintf(buffer, size, "%s_%d", base, count);
+    }
+    return buffer;
 }
 
 void GenerateCode(CodeGenInfo *self) {
@@ -160,4 +172,29 @@ void GenerateLetStatement(CodeGenInfo *self) {
     }
 
     self->curr_tree_node = node;
+}
+void GenerateIfStatement(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    self->curr_tree_node = node->children[2];
+    GenerateExpression(self);
+    writeArithmetic(self->vm_writer,CMD_NOT);
+    char *label1 = generate_label(self->class, self->labelCount++);
+    char *label2 = generate_label(self->class, self->labelCount++);
+
+    writeIf(self->vm_writer,label2);
+
+    self->curr_tree_node = node->children[5];
+    GenerateStatements(self);
+
+    writeLabel(self->vm_writer,label2);
+    if (node->currChildIndex == 11) {
+        self->curr_tree_node = node->children[9];
+        GenerateStatements(self);
+    }
+
+    writeGoTo(self->vm_writer,label1);
+
+    self->curr_tree_node = node;
+    free(label1);
+    free(label2);
 }

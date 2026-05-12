@@ -8,11 +8,14 @@
 /** Computes the average of a sequence of integers. */
 class Main {
     function void main() {
-		var Array honey;
 		var int number;
 		let number = 1;
-		let honey = Array.new(10);
-		let honey[5] = 5;
+		if (number = 1){
+			let number = 2;
+		}
+		else {
+			let number = 3;
+		}
 		return;
     }
 	function void second(int arg1, int arg2){

@@ -9,7 +9,7 @@ enum Segment {
     SEG_CONST, SEG_ARG,
     SEG_LOCAL, SEG_STATIC,
     SEG_THIS, SEG_THAT,
-    SEG_POINTER, SEG_TEMP
+    SEG_POINTER, SEG_TEMP, SEG_NONE
 } typedef Segment;
 enum Command {
     CMD_ADD, CMD_SUB,
@@ -27,7 +27,7 @@ void writeLabel(const VMWriter *self, const char label[]);
 void writeGoTo(const VMWriter *self, const char label[]);
 void writeIf(const VMWriter *self, const char label[]);
 void writeCall(const VMWriter *self, const char name[], const int nArgs);
-void writeFunction(const VMWriter *self, const char name[], const int nLocals);
+void writeFunction(const VMWriter *self, const char name[], const char class[], const int nLocals);
 void writeReturn(const VMWriter *self);
 void closeWriter(VMWriter *self);
 

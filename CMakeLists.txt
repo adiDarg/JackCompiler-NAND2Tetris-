@@ -15,8 +15,8 @@ add_executable(JackCompiler main.c
         JackAnalyzer/JackAnalyzer.h
         SemanticAnalysis/SymbolTable/SymbolTable.c
         SemanticAnalysis/SymbolTable/SymbolTable.h
-        VMWriter/VMWriter.c
-        VMWriter/VMWriter.h
+        "Code Generation/VMWriter/VMWriter.c"
+        "Code Generation/VMWriter/VMWriter.h"
         CompilationEngine/Token/Token.h
         CompilationEngine/DataType.h
         CompilationEngine/Token/Token.c
@@ -36,4 +36,7 @@ add_executable(JackCompiler main.c
         JackAnalyzer/JackAnalyzerForDirectories.h
         debugging/debuggingTools.c
         debugging/debuggingTools.h
+        "Code Generation/CodeGenerator/CodeGenerator.c"
+        "Code Generation/CodeGenerator/CodeGenerator.h"
+        "Code Generation/CodeGenerator/CodeGenerator.h"
 )

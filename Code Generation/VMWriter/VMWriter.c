@@ -5,6 +5,7 @@
 #include "VMWriter.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 VMWriter* vm_constructor(const char pathStr[],const int strLength) {
     VMWriter* vm_writer = malloc(sizeof(VMWriter));
@@ -64,9 +65,8 @@ void writePop(const VMWriter *self, const Segment segment, const int index) {
     const char *segmentString = getSegmentString(segment);
     fprintf(self->fptr,"pop %s %d\n",segmentString,index);
 }
-void writeArithmetic(const VMWriter *self, const Command command) {
-    const char *commandString = getCommandString(command);
-    fprintf(self->fptr,"%s\n",commandString);
+void writeArithmetic(const VMWriter *self, const char* command) {
+    fprintf(self->fptr,"%s\n",command);
 }
 void writeLabel(const VMWriter *self, const char label[]) {
     fprintf(self->fptr,"(%s)\n",label);
@@ -80,8 +80,13 @@ void writeIf(const VMWriter *self, const char label[]) {
 void writeCall(const VMWriter *self, const char name[], const int nArgs) {
     fprintf(self->fptr,"call %s %d\n",name,nArgs);
 }
-void writeFunction(const VMWriter *self, const char name[], const int nLocals) {
-    fprintf(self->fptr,"function %s %d\n",name,nLocals);
+void writeFunction(const VMWriter *self, const char name[], const char class[], const int nLocals) {
+    if (strcmp(class,"")) {
+        fprintf(self->fptr,"function %s.%s %d\n",class,name,nLocals);
+    }
+    else {
+        fprintf(self->fptr,"function %s %d\n",name,nLocals);
+    }
 }
 void writeReturn(const VMWriter *self) {
     fprintf(self->fptr,"return\n");

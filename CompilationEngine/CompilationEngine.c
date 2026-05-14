@@ -299,9 +299,6 @@ int CompileClass(CompilationEngine *self) {
     int count = 1;
     while (tokenType(tokenizer) == TT_KEYWORD &&
     keyword(tokenizer) == KW_CONSTRUCTOR || keyword(tokenizer) == KW_FUNCTION || keyword(tokenizer) == KW_METHOD) {
-        if (count == 5) {
-            printf("Check CompileClass\n");
-        }
         count++;
         if (!CompileSubroutineDec(self)) {
             return 0;
@@ -358,11 +355,9 @@ int CompileSubroutineBody(CompilationEngine* self) {
             return 0;
         }
     }
-    printf("Check 1 SubroutineBody\n");
     if (!CompileStatements(self)) {
         return 0;
     }
-    printf("Check 2 SubroutineBody\n");
     if (!compileSymbol(self,'}')) {
         return 0;
     }
@@ -400,11 +395,9 @@ int CompileSubroutineDec(CompilationEngine* self) {
     if (!compileSymbol(self,')')) {
         return 0;
     }
-    printf("Check 1 SubroutineDec\n");
     if (!CompileSubroutineBody(self)) {
         return 0;
     }
-    printf("Check 2 SubroutineDec\n");
     self->tab--;
     writeOut(self,"</subroutineDec>\n");
     self->ast_curr = self->ast_curr->parent;
@@ -472,14 +465,11 @@ int CompileStatements(CompilationEngine* self) {
     writeOut(self,"<statements>\n");
     self->tab++;
 
-    printf("Check 1 Statements\n");
     ast_node(self->ast_curr,NODE_STATEMENTS,1,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 2 Statements\n");
 
     int finish = 0;
     while (tokenType(self->jack_tokenizer) == TT_KEYWORD && !finish) {
-        printf("Check Loop - Statements\n");
         switch (keyword(self->jack_tokenizer)) {
             case KW_LET:
                 if (!CompileLet(self)) {
@@ -497,7 +487,6 @@ int CompileStatements(CompilationEngine* self) {
                 }
                 break;
             case KW_DO:
-                printf("Check Enter Do\n");
                 if (!CompileDo(self)) {
                     return 0;
                 }
@@ -635,21 +624,16 @@ int CompileWhile(CompilationEngine* self) {
 int CompileDo(CompilationEngine* self) {
     writeOut(self,"<doStatement>\n");
     self->tab++;
-    printf("Check 1 Do\n");
 
     ast_node(self->ast_curr,NODE_DO_STATEMENT,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
-    printf("Check 2 Do\n");
-
     if (!compileKeyword(self,KW_DO)) {
         return 0;
     }
-    printf("Check 3 Do\n");
     if (!CompileSubroutineCall(self)) {
         return 0;
     }
-    printf("Check 4 Do\n");
     if (!compileSymbol(self,';')) {
         return 0;
     }
@@ -689,14 +673,12 @@ int compile_e3_pre(CompilationEngine* self);
 int CompileExpression(CompilationEngine* self) {
     writeOut(self,"<expression>\n");
     self->tab++;
-    printf("Check 1 Expression\n");
     ast_node(self->ast_curr,NODE_EXPRESSION,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
     if (!compile_e1_pre(self)) {
         return 0;
     }
-    printf("Check 2 Expression\n");
     while (compileSymbol(self,'&') || compileSymbol(self,'|')) {
         if (!compile_e1_pre(self)) {
             return 0;
@@ -710,20 +692,16 @@ int CompileExpression(CompilationEngine* self) {
     return 1;
 }
 int compile_e1_pre(CompilationEngine* self) {
-    printf("Check 1 e1\n");
     ast_node(self->ast_curr,NODE_E1,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 2 e1\n");
     if (!compile_e2_pre(self)) {
         return 0;
     }
-    printf("Check 3 e1\n");
     while (compileSymbol(self,'<') || compileSymbol(self,'>') || compileSymbol(self,'=')) {
         if (!compile_e2_pre(self)) {
             return 0;
         }
     }
-    printf("Check 4 e1\n");
     self->jack_tokenizer->isError = 0;
     strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
@@ -732,17 +710,14 @@ int compile_e1_pre(CompilationEngine* self) {
 int compile_e2_pre(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_E2,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 1 e2\n");
     if (!compile_e3_pre(self)) {
         return 0;
     }
-    printf("Check 2 e2\n");
     while (compileSymbol(self,'+') || compileSymbol(self,'-')) {
         if (!compile_e3_pre(self)) {
             return 0;
         }
     }
-    printf("Check 3 e2\n");
     self->jack_tokenizer->isError = 0;
     strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
@@ -751,17 +726,14 @@ int compile_e2_pre(CompilationEngine* self) {
 int compile_e3_pre(CompilationEngine* self) {
     ast_node(self->ast_curr,NODE_E3,3,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 1 e3\n");
     if (!CompileTerm(self)) {
         return 0;
     }
-    printf("Check 2 e3\n");
     while (compileSymbol(self,'*') || compileSymbol(self,'/')) {
         if (!CompileTerm(self)) {
             return 0;
         }
     }
-    printf("Check 3 e3\n");
     self->jack_tokenizer->isError = 0;
     strcpy_s(self->error,self->error_size,"");
     self->ast_curr = self->ast_curr->parent;
@@ -794,9 +766,7 @@ int CompileTerm(CompilationEngine* self) {
     self->tab++;
 
     ast_node(self->ast_curr,NODE_TERM,4,self->dt_size);
-    printf("Check 1 Term\n");
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 2 Term\n");
 
     if (compileIntConstant(self)) {
         self->tab--;
@@ -871,11 +841,9 @@ int CompileSubroutineCall(CompilationEngine* self) {
     writeOut(self,"<subroutineCall>\n");
     self->tab++;
 
-    printf("Check 1 SubroutineCall\n");
     ast_node(self->ast_curr,NODE_SUBROUTINE_CALL,6,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
 
-    printf("Check 2 SubroutineCall\n");
     if (!compileIdentifier(self)) {
         return 0;
     }
@@ -887,11 +855,9 @@ int CompileSubroutineCall(CompilationEngine* self) {
     if (!compileSymbol(self,'(')) {
         return 0;
     }
-    printf("Check 3 SubroutineCall\n");
     if (!CompileExpressionList(self)) {
         return 0;
     }
-    printf("Check 4 SubroutineCall\n");
     if (!compileSymbol(self,')')) {
         return 0;
     }
@@ -905,21 +871,16 @@ int CompileExpressionList(CompilationEngine* self) {
     writeOut(self,"<expressionList>\n");
     self->tab++;
 
-    printf("Check 1 ExpressionList\n");
     ast_node(self->ast_curr,NODE_EXPRESSION_LIST,1,self->dt_size);
     self->ast_curr = self->ast_curr->children[self->ast_curr->currChildIndex-1];
-    printf("Check 2 ExpressionList\n");
     if (!isTerm(self)) {
         self->tab--;
         writeOut(self,"</expressionList>\n");
         self->ast_curr = self->ast_curr->parent;
         return 1;
     }
-    printf("Check 3 ExpressionList\n");
     int first = 1;
     while (first || compileSymbol(self,',')) {
-        printf(self->jack_tokenizer->buffer);
-        printf("\nCheck Loop ExpressionList\n");
         if (!CompileExpression(self)) {
             return 0;
         }
@@ -927,7 +888,6 @@ int CompileExpressionList(CompilationEngine* self) {
             first = 0;
         }
     }
-    printf("Check 4 ExpressionList\n");
 
     self->tab--;
     writeOut(self,"</expressionList>\n");

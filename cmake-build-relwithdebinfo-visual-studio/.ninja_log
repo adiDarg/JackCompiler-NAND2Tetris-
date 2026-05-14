@@ -16,3 +16,12 @@
 14	223	8000499137873879	CMakeFiles/JackCompiler.dir/JackTokenizer/JackTokenizer.c.obj	71f5c6090e63b433
 25	389	8000501579744433	CMakeFiles/JackCompiler.dir/JackAnalyzer/JackAnalyzerForDirectories.c.obj	62a6476ffe9b2fb0
 137	422	8000523579735446	JackCompiler.exe	75ae09c398a0d2f5
+82	1037	8003609048764294	CMakeFiles/JackCompiler.dir/Code_Generation/VMWriter/VMWriter.c.obj	2dd6f20f21469eb2
+94	1086	8003609048874330	CMakeFiles/JackCompiler.dir/Code_Generation/CodeGenerator/CodeGenerator.c.obj	bbb378ba6348a877
+39	195	8003609689868554	CMakeFiles/JackCompiler.dir/Code_Generation/VMWriter/VMWriter.c.obj	2dd6f20f21469eb2
+42	239	8003611597839594	CMakeFiles/JackCompiler.dir/Code_Generation/CodeGenerator/CodeGenerator.c.obj	bbb378ba6348a877
+240	624	8003611599817447	JackCompiler.exe	c44b42732a6981ed
+40	402	8003613535784841	CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj	43dcc82b3402a98
+403	802	8003613539414014	JackCompiler.exe	c44b42732a6981ed
+62	423	8003615164171478	CMakeFiles/JackCompiler.dir/CompilationEngine/CompilationEngine.c.obj	43dcc82b3402a98
+424	821	8003615167791396	JackCompiler.exe	c44b42732a6981ed

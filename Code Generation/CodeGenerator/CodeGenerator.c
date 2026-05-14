@@ -32,6 +32,7 @@ void GenerateWhileStatement(CodeGenInfo *self);
 void GenerateDoStatement(CodeGenInfo *self);
 void GenerateReturnStatement(CodeGenInfo *self);
 void GenerateExpression(CodeGenInfo *self);
+void GenerateSubroutineCall(CodeGenInfo *self);
 
 Segment getSegmentFromSK(const SymbolKind kind) {
     Segment segment = SEG_NONE;
@@ -66,16 +67,16 @@ void generateIdentifierPop(const char *identifier,const int length, const CodeGe
 void generateIdentifierPush(const char *identifier,const int length, const CodeGenInfo *self) {
     const SymbolKind kind = kindOf(self->symbol_table,identifier,length);
     const int index = indexOf(self->symbol_table,identifier,length);
-    writePop(self->vm_writer,getSegmentFromSK(kind),index);
+    writePush(self->vm_writer,getSegmentFromSK(kind),index);
 }
-char* generate_label(const char* base, int count) {
+char* generate_label(CodeGenInfo *self) {
     // Determine required size: base + underscore + ~10 digits + null terminator
-    int size = snprintf(NULL, 0, "%s_%d", base, count) + 1;
+    int size = snprintf(NULL, 0, "%s_%d", self->class, self->labelCount) + 1;
     if (size <= 0) return NULL;
 
     char* buffer = malloc(size);
     if (buffer) {
-        snprintf(buffer, size, "%s_%d", base, count);
+        snprintf(buffer, size, "%s_%d", self->class, self->labelCount++);
     }
     return buffer;
 }
@@ -178,8 +179,8 @@ void GenerateIfStatement(CodeGenInfo *self) {
     self->curr_tree_node = node->children[2];
     GenerateExpression(self);
     writeArithmetic(self->vm_writer,CMD_NOT);
-    char *label1 = generate_label(self->class, self->labelCount++);
-    char *label2 = generate_label(self->class, self->labelCount++);
+    char *label1 = generate_label(self);
+    char *label2 = generate_label(self);
 
     writeIf(self->vm_writer,label2);
 
@@ -198,3 +199,49 @@ void GenerateIfStatement(CodeGenInfo *self) {
     free(label1);
     free(label2);
 }
+void GenerateWhileStatement(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    //Get labels for loop
+    char *label1 = generate_label(self);
+    char *label2 = generate_label(self);
+    //Enter loop
+    writeLabel(self->vm_writer,label1);
+
+    //Check loop condition
+    self->curr_tree_node = node->children[2];
+    GenerateExpression(self);
+    writeArithmetic(self->vm_writer,CMD_NOT);
+    writeIf(self->vm_writer,label2);
+
+    //Write loop contents
+    self->curr_tree_node = node->children[5];
+    GenerateStatements(self);
+    //Go back to loop start
+    writeGoTo(self->vm_writer,label1);
+
+    //Write exit label
+    writeLabel(self->vm_writer,label2);
+    free(label1);
+    free(label2);
+    self->curr_tree_node = node;
+}
+void GenerateDoStatement(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    self->curr_tree_node = node->children[1];
+    GenerateSubroutineCall(self);
+    writePop(self->vm_writer,SEG_TEMP,0);
+    self->curr_tree_node = node;
+}
+void GenerateReturnStatement(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    if (node->children[1]->nodeType == NODE_EXPRESSION) {
+        self->curr_tree_node = node->children[1];
+        GenerateExpression(self);
+    }
+    else {
+        writePush(self->vm_writer,SEG_CONST,0);
+    }
+    writeReturn(self->vm_writer);
+    self->curr_tree_node = node;
+}
+void GenerateExpression(CodeGenInfo *self){}

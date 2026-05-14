@@ -9,16 +9,11 @@
 class Main {
     function void main() {
 		var int number;
-		let number = 1;
-		if (number = 1){
-			let number = 2;
-		}
-		else {
-			let number = 3;
-		}
+		do Main.second(1,1);
+		let number = 0;
 		return;
     }
 	function void second(int arg1, int arg2){
-		return 0;
+		return;
 	}
 }

@@ -65,8 +65,13 @@ void writePop(const VMWriter *self, const Segment segment, const int index) {
     const char *segmentString = getSegmentString(segment);
     fprintf(self->fptr,"pop %s %d\n",segmentString,index);
 }
-void writeArithmetic(const VMWriter *self, const char* command) {
-    fprintf(self->fptr,"%s\n",command);
+void writePush(const VMWriter *self, const Segment segment, const int index) {
+    const char *segmentString = getSegmentString(segment);
+    fprintf(self->fptr,"push %s %d\n",segmentString,index);
+}
+void writeArithmetic(const VMWriter *self, const Command command) {
+    const char *command_string = getCommandString(command);
+    fprintf(self->fptr,"%s\n",command_string);
 }
 void writeLabel(const VMWriter *self, const char label[]) {
     fprintf(self->fptr,"(%s)\n",label);

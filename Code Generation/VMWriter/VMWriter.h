@@ -22,6 +22,7 @@ typedef struct {
 } VMWriter;
 VMWriter* vm_constructor(const char pathStr[],const int strLength);
 void writePop(const VMWriter *self, const Segment segment, const int index);
+void writePush(const VMWriter *self, const Segment segment, const int index);
 void writeArithmetic(const VMWriter *self, const Command command);
 void writeLabel(const VMWriter *self, const char label[]);
 void writeGoTo(const VMWriter *self, const char label[]);

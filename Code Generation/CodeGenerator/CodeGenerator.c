@@ -33,8 +33,9 @@ void GenerateDoStatement(CodeGenInfo *self);
 void GenerateReturnStatement(CodeGenInfo *self);
 void GenerateExpression(CodeGenInfo *self);
 void GenerateSubroutineCall(CodeGenInfo *self);
+void GenerateE1(CodeGenInfo *self);
 
-Segment getSegmentFromSK(const SymbolKind kind) {
+Segment getSegmentFromSK(const SymbolKind kind){
     Segment segment = SEG_NONE;
     switch (kind) {
         case SK_ARG: {
@@ -58,6 +59,19 @@ Segment getSegmentFromSK(const SymbolKind kind) {
         }
     }
     return segment;
+}
+Command getCommandFromSymbol(const char symbol) {
+    switch (symbol) {
+        case '=': return CMD_EQ;
+        case '>': return CMD_GT;
+        case '<': return CMD_LT;
+        case '|': return CMD_OR;
+        case '+': return CMD_ADD;
+        case '&': return CMD_AND;
+        case '~': return CMD_NOT;
+        case '-': return CMD_SUB;
+        default: return CMD_UNKNOWN;
+    }
 }
 void generateIdentifierPop(const char *identifier,const int length, const CodeGenInfo *self) {
     const SymbolKind kind = kindOf(self->symbol_table,identifier,length);
@@ -244,4 +258,48 @@ void GenerateReturnStatement(CodeGenInfo *self) {
     writeReturn(self->vm_writer);
     self->curr_tree_node = node;
 }
-void GenerateExpression(CodeGenInfo *self){}
+void GenerateExpression(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    for (int i = 0; i < node->currChildIndex; i+=2) {
+        self->curr_tree_node = node->children[i];
+        GenerateE1(self);
+        if (i+1 < node->currChildIndex) {
+            const NodeAST *operand = node->children[i+1];
+            const char symbol = operand->token->info.symbol;
+            const Command command = getCommandFromSymbol(symbol);
+            writeArithmetic(self->vm_writer,command);
+        }
+    }
+    self->curr_tree_node = node;
+}
+void GenerateSubroutineCall(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    char *routine_name;
+    int expressionListIndex;
+    if (node->children[1]->token->info.symbol == '.') {
+        expressionListIndex = 4;
+
+        const char *object = node->children[0]->token->info.identifier;
+        const char *function = node->children[2]->token->info.identifier;
+        size_t size = strlen(object) + strlen(function) + 2;
+        routine_name = malloc(size);
+        strcpy_s(routine_name,size,object);
+        strcat_s(routine_name,size,".");
+        strcat_s(routine_name,size,function);
+    }
+    else {
+        expressionListIndex = 2;
+        const char *function = node->children[0]->token->info.identifier;
+        routine_name = _strdup(function);
+    }
+
+    const NodeAST *expression_list = node->children[expressionListIndex];
+    for (int i = 0; i < expression_list->currChildIndex; i++) {
+        self->curr_tree_node = expression_list->children[i];
+        GenerateExpression(self);
+    }
+
+    writeCall(self->vm_writer,routine_name,expression_list->currChildIndex);
+
+    self->curr_tree_node = node;
+}

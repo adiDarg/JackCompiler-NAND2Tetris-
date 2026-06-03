@@ -15,7 +15,7 @@ enum Command {
     CMD_ADD, CMD_SUB,
     CMD_NEG, CMD_EQ,
     CMD_GT, CMD_LT,
-    CMD_AND, CMD_OR, CMD_NOT
+    CMD_AND, CMD_OR, CMD_NOT, CMD_UNKNOWN
 } typedef Command;
 typedef struct {
     FILE* fptr; //8

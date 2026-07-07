@@ -648,7 +648,7 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_UNARY_OP: {
             self->current = node->children[1];
             const char res = AnalyzeTerm(self);
-            node->dataType = strdup(self->current->dataType);
+            node->dataType = _strdup(self->current->dataType);
             self->current = node;
             return res;
         }
@@ -656,19 +656,19 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_SUBROUTINE_CALL: {
             self->current = node->children[0];
             const char res = AnalyzeSubroutineCall(self);
-            strncpy(node->dataType, self->current->dataType,self->dt_size-1);
+            strcpy_s(node->dataType, self->dt_size-1, self->current->dataType);
             node->dataType[self->dt_size - 1] = '\0';
             self->current = node;
             return res;
         }
 
         case NODE_INTEGER_CONSTANT: {
-            strncpy(node->dataType,"int",self->dt_size-1);
+            strcpy_s(node->dataType, self->dt_size-1, "int");
             node->dataType[self->dt_size - 1] = '\0';
             return 1;
         }
         case NODE_STRING_CONSTANT: {
-            strncpy(node->dataType,"String",self->dt_size-1);
+            strcpy_s(node->dataType, self->dt_size-1, "String");
             node->dataType[self->dt_size - 1] = '\0';
             return 1;
         }
@@ -676,17 +676,17 @@ char AnalyzeTerm(SemanticData *self) {
             const Keyword keyword = node->children[0]->token->info.keyword;
             switch (keyword) {
                 case KW_TRUE: case KW_FALSE: {
-                    strncpy(node->dataType,"boolean",self->dt_size-1);
+                    strcpy_s(node->dataType,self->dt_size-1,"boolean");
                     node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
                 case KW_NULL: {
-                    strncpy(node->dataType,"null",self->dt_size-1);
+                    strcpy_s(node->dataType,self->dt_size-1,"null");
                     node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
                 case KW_THIS: {
-                    strncpy(node->dataType,self->root->children[1]->token->info.identifier,self->dt_size-1);
+                    strcpy_s(node->dataType,self->dt_size-1,self->root->children[1]->token->info.identifier);
                     node->dataType[self->dt_size - 1] = '\0';
                     return 1;
                 }
@@ -703,7 +703,7 @@ char AnalyzeTerm(SemanticData *self) {
         case NODE_SYMBOL: {
             self->current = node->children[1];
             const char res = AnalyzeExpression(self);
-            node->dataType = strdup(self->current->dataType);
+            node->dataType = _strdup(self->current->dataType);
             self->current = node;
             return res;
         }

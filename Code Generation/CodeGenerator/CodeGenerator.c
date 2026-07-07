@@ -34,6 +34,9 @@ void GenerateReturnStatement(CodeGenInfo *self);
 void GenerateExpression(CodeGenInfo *self);
 void GenerateSubroutineCall(CodeGenInfo *self);
 void GenerateE1(CodeGenInfo *self);
+void GenerateE2(CodeGenInfo *self);
+void GenerateE3(CodeGenInfo *self);
+void GenerateTerm(CodeGenInfo *self);
 
 Segment getSegmentFromSK(const SymbolKind kind){
     Segment segment = SEG_NONE;
@@ -301,5 +304,123 @@ void GenerateSubroutineCall(CodeGenInfo *self) {
 
     writeCall(self->vm_writer,routine_name,expression_list->currChildIndex);
 
+    self->curr_tree_node = node;
+}
+void GenerateE1(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    for (int i = 0; i < node->currChildIndex; i+=2) {
+        self->curr_tree_node = node->children[i];
+        GenerateE2(self);
+        if (i+1 < node->currChildIndex) {
+            const NodeAST *operand = node->children[i+1];
+            const char symbol = operand->token->info.symbol;
+            const Command command = getCommandFromSymbol(symbol);
+            writeArithmetic(self->vm_writer,command);
+        }
+    }
+    self->curr_tree_node = node;
+}
+void GenerateE2(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    for (int i = 0; i < node->currChildIndex; i+=2) {
+        self->curr_tree_node = node->children[i];
+        GenerateE3(self);
+        if (i+1 < node->currChildIndex) {
+            const NodeAST *operand = node->children[i+1];
+            const char symbol = operand->token->info.symbol;
+            const Command command = getCommandFromSymbol(symbol);
+            writeArithmetic(self->vm_writer,command);
+        }
+    }
+    self->curr_tree_node = node;
+}
+void GenerateE3(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    for (int i = 0; i < node->currChildIndex; i+=2) {
+        self->curr_tree_node = node->children[i];
+        GenerateTerm(self);
+        if (i+1 < node->currChildIndex) {
+            const NodeAST *operand = node->children[i+1];
+            const char symbol = operand->token->info.symbol;
+            const Command command = getCommandFromSymbol(symbol);
+            writeArithmetic(self->vm_writer,command);
+        }
+    }
+    self->curr_tree_node = node;
+}
+void GenerateTerm(CodeGenInfo *self) {
+    NodeAST *node = self->curr_tree_node;
+    switch (node->children[0]->nodeType) {
+        case NODE_UNARY_OP: {
+            const Command command = getCommandFromSymbol(node->children[0]->token->info.symbol);
+            writeArithmetic(self->vm_writer,command);
+            self->curr_tree_node = node->children[1];
+            GenerateTerm(self);
+            self->curr_tree_node = node;
+            break;
+        }
+
+        case NODE_SUBROUTINE_CALL: {
+            node->children[0];
+            GenerateSubroutineCall(self);
+            self->curr_tree_node = node;
+            break;
+        }
+
+        case NODE_INTEGER_CONSTANT: {
+            writePush(self->vm_writer,SEG_CONST,node->children[0]->token->info.intVal);
+            break;
+        }
+        case NODE_STRING_CONSTANT: {
+            const char* string = node->children[0]->token->info.stringVal;
+            writePush(self->vm_writer,SEG_CONST,strlen(string));
+            writeCall(self->vm_writer,"String.new",1);
+            int i = 0;
+            while (string[i++] != '\0') {
+                writePush(self->vm_writer,SEG_CONST,string[i]);
+                writeCall(self->vm_writer,"String.appendChar",2);
+            }
+            break;
+        }
+        case NODE_KEYWORD: {
+            const Keyword keyword = node->children[0]->token->info.keyword;
+            switch (keyword) {
+                case KW_TRUE: {
+                    writePush(self->vm_writer,SEG_CONST,1);
+                    writeArithmetic(self->vm_writer,CMD_NEG);
+                    break;
+                }
+                case KW_FALSE: case KW_NULL: {
+                    writePush(self->vm_writer,SEG_CONST,0);
+                    break;
+                }
+                case KW_THIS: {
+                    writePush(self->vm_writer,SEG_POINTER,0);
+                    break;
+                }
+                default: {
+                    break;
+                }
+            }
+        }
+
+        case NODE_IDENTIFIER: {
+            const char *identifier = node->children[0]->token->info.identifier;
+            const Segment segment = getSegmentFromSK(kindOf(self->symbol_table,identifier,strlen(identifier)));
+            const int index = indexOf(self->symbol_table,identifier,strlen(identifier));
+            writePush(self->vm_writer,segment,index);
+            break;
+        }
+
+        case NODE_SYMBOL: {
+            self->curr_tree_node = node->children[1];
+            GenerateExpression(self);
+            break;
+        }
+
+        default: {
+            break;
+        }
+    }
     self->curr_tree_node = node;
 }

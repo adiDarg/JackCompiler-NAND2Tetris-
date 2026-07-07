@@ -199,9 +199,6 @@ char AnalyzeSubRoutineDec(SemanticData *self) {
         return 0;
     }
 
-    const char *class = self->root->children[1]->token->info.identifier;
-    const char *routine_name = node->children[2]->token->info.identifier;
-
     self->current = node->children[4];
     if (!AnalyzeParameterList(self)) {
         return 0;
@@ -222,8 +219,14 @@ char AnalyzeParameterList(SemanticData *self) {
         char *identifier = ident_node->token->info.identifier;
         if (kindOf(self->symbol_table,identifier,strlen(identifier)) == SK_ARG) {
             //Symbol already defined as an argument
-            reportError(self,strcat(identifier," already defined as an argument"),ident_node->token->line);
+            const char* toAppend = " already defined as an argument";
+            const size_t error_size = strlen(identifier) + strlen(toAppend) + 1;
+            char* error = malloc(error_size);
+            strcpy_s(error, error_size, identifier);
+            strcat_s(error, error_size, toAppend);
+            reportError(self,error,ident_node->token->line);
             free(type_str);
+            free(error);
             return 0;
         }
         define(self->symbol_table,identifier,strlen(identifier),
@@ -407,9 +410,14 @@ char AnalyzeReturnStatement(SemanticData *self) {
         return 0;
     }
     if (!areDataTypesCompatible(type_routine,self->current->dataType)) {
-        reportError(self,
-            strcat(strcat("expected ",type_routine)," return type"),
-            self->current->token->line);
+        const int len = snprintf(NULL, 0, "expected %s return type", type_routine) + 1;
+        char *error_msg = malloc(len);
+
+        if (error_msg != NULL) {
+            snprintf(error_msg, len, "expected %s return type", type_routine);
+            reportError(self, error_msg, self->current->token->line);
+            free(error_msg);
+        }
         return 0;
     }
     self->current = node;
@@ -424,7 +432,7 @@ char AnalyzeExpression(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,self->current->dataType);
         node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
@@ -443,7 +451,7 @@ char AnalyzeExpression(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"boolean",self->dt_size-1);
+    strcpy_s(node->dataType,self->dt_size-1,"boolean");
     node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
@@ -457,7 +465,7 @@ char AnalyzeE1(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,self->current->dataType);
         node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
@@ -485,7 +493,7 @@ char AnalyzeE1(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"boolean",self->dt_size-1);
+    strcpy_s(node->dataType,self->dt_size-1,"boolean");
     node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
@@ -498,7 +506,7 @@ char AnalyzeE2(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,self->current->dataType);
         node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
@@ -517,7 +525,7 @@ char AnalyzeE2(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"int",self->dt_size-1);
+    strcpy_s(node->dataType,self->dt_size-1,"int");
     node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
@@ -530,7 +538,7 @@ char AnalyzeE3(SemanticData *self) {
         return 0;
     }
     if (node->currChildIndex == 1) {
-        strncpy(node->dataType,self->current->dataType,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,self->current->dataType);
         node->dataType[self->dt_size - 1] = '\0';
         self->current = node;
         return 1;
@@ -551,7 +559,7 @@ char AnalyzeE3(SemanticData *self) {
             return 0;
         }
     }
-    strncpy(node->dataType,"int",self->dt_size-1);
+    strcpy_s(node->dataType,self->dt_size-1,"int");
     node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
@@ -596,7 +604,7 @@ char AnalyzeSubroutineCall(SemanticData *self) {
     if (!AnalyzeExpressionList(self)) {
         return 0;
     }
-    strncpy(node->dataType,routine->type,self->dt_size-1);
+    strcpy_s(node->dataType,self->dt_size-1,routine->type);
     node->dataType[self->dt_size - 1] = '\0';
     self->current = node;
     return 1;
@@ -613,11 +621,11 @@ char analyzeIdentifierTerm(SemanticData *self) {
         return 0;
     }
     if (isVar) {
-        strncpy(node->dataType,ident_type,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,ident_type);
         node->dataType[self->dt_size - 1] = '\0';
     }
     else {
-        strncpy(node->dataType,name,self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,name);
         node->dataType[self->dt_size - 1] = '\0';
     }
 
@@ -635,7 +643,7 @@ char analyzeIdentifierTerm(SemanticData *self) {
             return 0;
         }
         //null is compatible with any type, as is an array member which can be of any type
-        strncpy(node->dataType,"null",self->dt_size-1);
+        strcpy_s(node->dataType,self->dt_size-1,"null");
         node->dataType[self->dt_size - 1] = '\0';
         //No length check for now - overflow possible
     }
